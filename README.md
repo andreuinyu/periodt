@@ -1,6 +1,6 @@
 # 🌙 Periodt — Period Tracker PWA
 
-A privacy-first, self-hosted period tracking Progressive Web App. All data stays on your server.
+A privacy-first, self-hosted, dead simple period tracking Progressive Web App. Data stays locally
 
 ## Stack
 
@@ -14,6 +14,7 @@ A privacy-first, self-hosted period tracking Progressive Web App. All data stays
 ---
 
 ## 🚀 Quick Start
+TBD - this is devmode. eventually published to registry and an example docker compose will be provided.
 
 ```bash
 # 1. Clone / download this folder
@@ -56,7 +57,7 @@ That's it. The app is live.
 | GET | `/api/predictions` | Get next period prediction |
 | POST | `/api/push/subscribe` | Register push subscription |
 
-Interactive docs: http://localhost:8000/docs
+Interactive API docs: http://localhost:3111/docs
 
 ---
 
@@ -68,7 +69,7 @@ SQLite database is stored in a named Docker volume (`periodt_data`). To back up:
 docker run --rm -v periodt_data:/data -v $(pwd):/backup alpine \
   cp /data/tracker.db /backup/tracker_backup.db
 ```
-
+Or, instead of using a docker volume in the [docker-compose.yml](docker-compose.yml) `periodt_data:/data`, use a real path of your choosing `/path/to/your/periodt_data:/data`
 ---
 
 ## Configuration
@@ -77,8 +78,7 @@ Edit `docker-compose.yml` to change the port:
 
 ```yaml
 ports:
-  - "3000:8000"   # expose on port 3000 instead
-```
+  - "3111:8000"   # expose on port 3111
 
 ---
 
@@ -111,6 +111,9 @@ period-tracker/
     ├── index.html       # PWA shell
     └── static/
         ├── manifest.json
+        ├── scripts.js
+        ├── styles.css
+        ├── translations/LANGUAGE.json
         ├── sw.js        # Service worker
         └── icons/
             ├── icon-192.png
