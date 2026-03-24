@@ -37,8 +37,14 @@ function applyTranslations() {
     document.querySelectorAll('[data-i18n-title]').forEach(el => {
         el.title = t(el.dataset.i18nTitle);
     });
+    if (typeof renderHome === 'function') {
+        renderHome();
+    }
     if (typeof renderCalendar === 'function') {
         renderCalendar();
+    }
+    if (typeof renderHistory === 'function') {
+        renderHistory();
     }
 }
 
