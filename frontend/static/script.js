@@ -46,6 +46,13 @@ function applyTranslations() {
     if (typeof renderHistory === 'function') {
         renderHistory();
     }
+    if (typeof buildSymptomGrid === 'function') {
+        buildSymptomGrid();
+    }
+    if (typeof buildMoodRow === 'function') {
+        buildMoodRow();
+    }
+
 }
 
 
@@ -69,8 +76,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Load translations on page load
     await loadTranslations(langSelect.value);
-    SYMPTOMS = t('symptoms_list');
-    MOODS = t('moods');
     applyTranslations();
 
     // Handle language changes
@@ -84,9 +89,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('quick-start-date').value = today;
     document.getElementById('log-date').value = today;
     document.getElementById('end-date').value = today;
-
-    buildSymptomGrid();
-    buildMoodRow();
 
     calYear = new Date().getFullYear();
     calMonth = new Date().getMonth();
@@ -372,6 +374,7 @@ function setupForms() {
 }
 
 function buildSymptomGrid() {
+    SYMPTOMS = t('symptoms_list');
     const grid = document.getElementById('symptom-grid');
     grid.innerHTML = SYMPTOMS.map(s =>
         `<button class="symptom-chip" data-sym="${s}">${s}</button>`
@@ -386,6 +389,7 @@ function buildSymptomGrid() {
 }
 
 function buildMoodRow() {
+    MOODS = t('moods');
     const row = document.getElementById('mood-row');
     row.innerHTML = MOODS.map(m =>
         `<button class="mood-btn" data-mood="${m.l}"><span>${m.e}</span><span>${m.l}</span></button>`
