@@ -1,0 +1,7 @@
+{
+  "extends": ["config:base"],
+  "fileMatch": ["backend/requirements.txt"],
+  "rangeStrategy": "bump",
+  "semanticCommits": "enabled",
+  "labels": ["renovate"]
+}
