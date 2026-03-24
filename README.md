@@ -18,16 +18,14 @@ TBD - this is devmode. eventually published to registry and an example docker co
 
 ```bash
 # 1. Clone / download this folder
-cd period-tracker
+cd periodt
 
 # 2. Build and start
 docker compose up --build
 
 # 3. Open your browser
-open http://localhost:8000
+open http://localhost:3111
 ```
-
-That's it. The app is live.
 
 ---
 
