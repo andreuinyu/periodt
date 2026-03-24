@@ -69,7 +69,9 @@ SQLite database is stored in a named Docker volume (`periodt_data`). To back up:
 docker run --rm -v periodt_data:/data -v $(pwd):/backup alpine \
   cp /data/tracker.db /backup/tracker_backup.db
 ```
+
 Or, instead of using a docker volume in the [docker-compose.yml](docker-compose.yml) `periodt_data:/data`, use a real path of your choosing `/path/to/your/periodt_data:/data`
+
 ---
 
 ## Configuration
