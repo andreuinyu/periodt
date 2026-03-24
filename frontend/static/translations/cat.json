@@ -1,0 +1,117 @@
+{
+  "description": "seguiment del cicle",
+  "today": "Avui",
+  "in_days": "En {days} dies",
+  "days_ago": "Fa {days} dies",
+  "days_label": "dies",
+  "log": "Registre",
+  "history": "Historial",
+  "day_of_cycle": "Dia del cicle",
+  "no_data": "Sense dades",
+  "unknown": "Desconegut",
+  "next_period": "Pròxim període",
+  "fertile_window": "Finestra fèrtil",
+  "avg_cycle_length": "Durada mitjana",
+  "legend": "Llegenda",
+  "period_days": "Dies de període",
+  "estimated_fertile": "Finestra fèrtil estimada",
+  "predicted_period": "Pròxim període estimat",
+  "start_period": "Iniciar període",
+  "start_date": "Data d'inici",
+  "menstrual": "Menstrual",
+  "follicular": "Folicular",
+  "ovulation": "Ovulació",
+  "luteal": "Llútea",
+  "flow": "Flux",
+  "light": "Lleuger",
+  "medium": "Mitjà",
+  "heavy": "Abundant",
+  "flow_label": "Flux  {flow_intensity}",
+  "ongoing": "en curs",
+  "log_period_start": "Registrar inici",
+  "log_today": "Registrar avui",
+  "log_placeholder": "Com et sents…",
+  "date": "Data",
+  "symptoms": "Símptomes",
+  "mood": "Estat d'ànim",
+  "pain_level": "Nivell de dolor",
+  "none": "Nul",
+  "moderate": "Moderat",
+  "severe": "Sever",
+  "notes": "Notes",
+  "save_log": "Guardar registre",
+  "end_period": "Finalitzar període",
+  "end_date": "Data final",
+  "mark_period_ended": "Marcar com a finalitzat",
+  "past_cycles": "Cicles anteriors",
+  "no_cycles": "Encara no hi ha cicles registrats.",
+  "install_msg": "Afegeix Periodt a la teva pantalla d'inici per a la millor experiència.",
+  "install": "Instal·lar",
+  "cycle_removed": "Cicle eliminat",
+  "offline": "Ets fora de línia — veient dades locals",
+  "enable_notifications": "Habilitar notificacions",
+  "symptoms_list": [
+    "Rampes",
+    "Inflor",
+    "Mal de cap",
+    "Fatiga",
+    "Mal d'esquena",
+    "Sensibilitat als pits",
+    "Tacat",
+    "Nàusees",
+    "Acne",
+    "Canvis d'humor",
+    "Antulls",
+    "Insomni"
+  ],
+  "moods": [
+    {
+      "e": "😊",
+      "l": "Feliç"
+    },
+    {
+      "e": "😔",
+      "l": "Trista"
+    },
+    {
+      "e": "😤",
+      "l": "Irritable"
+    },
+    {
+      "e": "😰",
+      "l": "Ansiosa"
+    },
+    {
+      "e": "😐",
+      "l": "Neutral"
+    },
+    {
+      "e": "🤗",
+      "l": "Contenta"
+    }
+  ],
+  "weekstart": 1,
+  "months": [
+    "Gener",
+    "Febrer",
+    "Març",
+    "Abril",
+    "Maig",
+    "Juny",
+    "Juliol",
+    "Agost",
+    "Setembre",
+    "Octubre",
+    "Novembre",
+    "Desembre"
+  ],
+  "dows": [
+    "Dg",
+    "Dl",
+    "Dt",
+    "Dm",
+    "Dj",
+    "Dv",
+    "Ds"
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "description": "seguimiento del ciclo",
+  "today": "Hoy",
+  "in_days": "En {days} días",
+  "days_ago": "Hace {days} días",
+  "days_label": "días",
+  "log": "Registro",
+  "history": "Historial",
+  "day_of_cycle": "Día del ciclo",
+  "no_data": "Sin datos",
+  "unknown": "Desconocido",
+  "next_period": "Próximo periodo",
+  "fertile_window": "Ventana fértil",
+  "avg_cycle_length": "Duración media",
+  "legend": "Leyenda",
+  "period_days": "Días de periodo",
+  "estimated_fertile": "Ventana fértil estimada",
+  "predicted_period": "Próximo periodo estimado",
+  "start_period": "Iniciar periodo",
+  "start_date": "Fecha de inicio",
+  "menstrual": "Menstrual",
+  "follicular": "Folicular",
+  "ovulation": "Ovulación",
+  "luteal": "Lútea",
+  "flow": "Flujo",
+  "light": "Ligero",
+  "medium": "Medio",
+  "heavy": "Abundante",
+  "flow_label": "Flujo {flow_intensity}",
+  "ongoing": "en curso",
+  "log_period_start": "Registrar inicio",
+  "log_today": "Registrar hoy",
+  "log_placeholder": "Cómo te sientes…",
+  "date": "Fecha",
+  "symptoms": "Síntomas",
+  "mood": "Estado",
+  "pain_level": "Nivel de dolor",
+  "none": "Nulo",
+  "moderate": "Moderado",
+  "severe": "Severo",
+  "notes": "Notas",
+  "save_log": "Guardar registro",
+  "end_period": "Finalizar periodo",
+  "end_date": "Fecha final",
+  "mark_period_ended": "Marcar como finalizado",
+  "past_cycles": "Ciclos anteriores",
+  "no_cycles": "Aún no hay ciclos.",
+  "install_msg": "Añade Periodt a tu pantalla de inicio para mejor experiencia.",
+  "install": "Instalar",
+  "cycle_removed": "Ciclo eliminado",
+  "offline": "Sin conexión — mostrando datos guardados",
+  "enable_notifications": "Activar notificaciones",
+  "symptoms_list": [
+    "Calambres",
+    "Hinchazón",
+    "Dolor de cabeza",
+    "Fatiga",
+    "Dolor de espalda",
+    "Sensibilidad en los senos",
+    "Sangrado leve",
+    "Náuseas",
+    "Acné",
+    "Cambios de humor",
+    "Antojos",
+    "Insomnio"
+  ],
+  "moods": [
+    {
+      "e": "😊",
+      "l": "Feliz"
+    },
+    {
+      "e": "😔",
+      "l": "Triste"
+    },
+    {
+      "e": "😤",
+      "l": "Irritable"
+    },
+    {
+      "e": "😰",
+      "l": "Ansiosa"
+    },
+    {
+      "e": "😐",
+      "l": "Neutral"
+    },
+    {
+      "e": "🤗",
+      "l": "Contenta"
+    }
+  ],
+  "weekstart": 1,
+  "months": [
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre"
+  ],
+  "dows": [
+    "Do",
+    "Lu",
+    "Ma",
+    "Mi",
+    "Ju",
+    "Vi",
+    "Sa"
+  ]
+}
