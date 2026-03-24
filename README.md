@@ -77,10 +77,9 @@ Or, instead of using a docker volume in the [docker-compose.yml](docker-compose.
 Edit `docker-compose.yml` to change the port:
 
 ```yaml
-ports:
-  - "3111:8000"   # expose on port 3111
-
----
+  ports:
+    - "3111:8000"   # expose on port 3111
+```
 
 ## Development (without Docker)
 
