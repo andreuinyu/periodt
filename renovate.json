@@ -1,6 +1,14 @@
 {
   "extends": ["config:base"],
-  "fileMatch": ["backend/requirements.txt"],
+  "pip_requirements": {
+    "fileMatch": ["^backend/requirements\\.txt$"]
+  },
+  "dockerfile": {
+    "fileMatch": [
+      "^Dockerfile$",
+      "^backend/Dockerfile$"
+    ]
+  },
   "rangeStrategy": "bump",
   "semanticCommits": "enabled",
   "labels": ["renovate"]
