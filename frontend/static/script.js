@@ -2,6 +2,7 @@ const API = '';
 
 // Translations
 let translations = {};
+const localeMap = { en: 'en-US', es: 'es-ES', cat: 'ca-ES' };
 
 async function loadTranslations(lang) {
     try {
@@ -20,7 +21,7 @@ function t(key) {
 }
 
 function tVars(key, vars = {}) {
-    let str = t(key); // your existing t() function
+    let str = t(key);
     for (const k in vars) {
         str = str.replace(`{${k}}`, vars[k]);
     }
@@ -90,10 +91,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('log-date').value = today;
     document.getElementById('end-date').value = today;
 
-    calYear = new Date().getFullYear();
-    calMonth = new Date().getMonth();
-    renderCalendar();
-
     loadAll();
     setupNav();
     setupForms();
@@ -111,6 +108,8 @@ async function loadAll() {
         ]);
         cycles = c; symptoms = s; predictions = p;
         renderHome();
+        calYear = new Date().getFullYear();
+        calMonth = new Date().getMonth();
         renderCalendar();
         renderHistory();
     } catch (e) {
@@ -268,6 +267,7 @@ function renderCalendar() {
         else if (fertileDays.has(iso)) el.classList.add('fertile');
         else if (predictedDays.has(iso)) el.classList.add('predicted');
         if (symptomDays.has(iso)) el.classList.add('has-symptoms');
+        el.addEventListener('click', (e) => showDayMenu(e, iso));
         grid.appendChild(el);
     }
 }
@@ -278,6 +278,99 @@ document.getElementById('cal-prev').addEventListener('click', () => {
 document.getElementById('cal-next').addEventListener('click', () => {
     calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCalendar();
 });
+
+
+// ── Day-tap popup menu ─────────────────────────────────────────────────────
+function showDayMenu(e, iso) {
+    // Remove any existing menu
+    const existing = document.getElementById('day-menu');
+    if (existing) existing.remove();
+
+    const menu = document.createElement('div');
+    menu.id = 'day-menu';
+    menu.className = 'day-menu';
+
+    //const fmtLabel = new Date(iso + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    const lang = localStorage.getItem('lang') || 'en';
+    const fmtLabel = new Date(iso + 'T00:00:00').toLocaleDateString(localeMap[lang], { month: 'short', day: 'numeric' });
+
+    const options = [
+        { icon: '🌙', labelKey: 'start_period', action: () => navigateToForm('start-period', iso) },
+        { icon: '✦', labelKey: 'log_today', action: () => navigateToForm('log-today', iso) },
+        { icon: '◎', labelKey: 'end_period', action: () => navigateToForm('end-period', iso) },
+    ];
+
+    menu.innerHTML = `<div class="day-menu-date">${fmtLabel}</div>` +
+        options.map((o, i) =>
+            `<button class="day-menu-item" data-idx="${i}">
+                <span class="day-menu-icon">${o.icon}</span>
+                <span>${t(o.labelKey)}</span>
+            </button>`
+        ).join('');
+
+    document.body.appendChild(menu);
+
+    // Wire up button clicks before positioning (avoids layout thrash)
+    menu.querySelectorAll('.day-menu-item').forEach((btn, i) => {
+        btn.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            menu.remove();
+            options[i].action();
+        });
+    });
+
+    // Position near the tapped day cell
+    const rect = e.currentTarget.getBoundingClientRect();
+    const menuW = 200, menuH = 140;
+    let top = rect.bottom + window.scrollY + 6;
+    let left = rect.left + window.scrollX - menuW / 2 + rect.width / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - menuW - 8));
+    if (top + menuH > window.scrollY + window.innerHeight - 8) {
+        top = rect.top + window.scrollY - menuH - 6;
+    }
+    menu.style.top = `${top}px`;
+    menu.style.left = `${left}px`;
+
+    // Dismiss on outside click
+    const dismiss = (ev) => {
+        if (!menu.contains(ev.target)) {
+            menu.remove();
+            document.removeEventListener('click', dismiss, true);
+        }
+    };
+    // Use capture + tiny delay so the originating click doesn't immediately dismiss
+    setTimeout(() => document.addEventListener('click', dismiss, true), 0);
+}
+
+function navigateToForm(form, iso) {
+    // Switch to Log tab
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    const logBtn = document.querySelector('.nav-btn[data-view="log"]');
+    logBtn.classList.add('active');
+    document.getElementById('view-log').classList.add('active');
+
+    let targetEl;
+    if (form === 'log-today') {
+        document.getElementById('log-date').value = iso;
+        targetEl = document.querySelector('.card:has(#log-date)') || document.getElementById('log-date');
+    } else if (form === 'start-period') {
+        document.getElementById('quick-start-date').value = iso;
+        targetEl = document.querySelector('.card:has(#quick-start-date)') || document.getElementById('quick-start-date');
+    } else if (form === 'end-period') {
+        document.getElementById('end-date').value = iso;
+        targetEl = document.querySelector('.card:has(#end-date)') || document.getElementById('end-date');
+    }
+
+    if (targetEl) {
+        setTimeout(() => {
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Focus the date input for good UX
+            const inp = targetEl.matches('input') ? targetEl : targetEl.querySelector('input[type="date"]');
+            if (inp) inp.focus();
+        }, 60);
+    }
+}
 
 // ── History ────────────────────────────────────────────────────────────────
 function renderHistory() {

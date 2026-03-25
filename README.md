@@ -6,8 +6,8 @@ A privacy-first, self-hosted, dead simple period tracking Progressive Web App. D
 
 | Layer | Tech |
 |-------|------|
-| Backend | Python 3.12 + FastAPI |
-| Database | SQLite (persisted via Docker volume) |
+| Backend | Python 3.14 + FastAPI |
+| Database | SQLite |
 | Frontend | Vanilla JS PWA |
 | Container | Docker + Docker Compose |
 
