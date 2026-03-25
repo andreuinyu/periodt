@@ -30,6 +30,8 @@
   "ongoing": "en curso",
   "log_period_start": "Registrar inicio",
   "log_today": "Registrar hoy",
+  "day_log": "Registro del dia",
+  "log_removed": "Registro eliminado",
   "log_placeholder": "Cómo te sientes…",
   "date": "Fecha",
   "symptoms": "Síntomas",
@@ -49,7 +51,6 @@
   "install": "Instalar",
   "cycle_removed": "Ciclo eliminado",
   "offline": "Sin conexión — mostrando datos guardados",
-  "enable_notifications": "Activar notificaciones",
   "symptoms_list": [
     "Calambres",
     "Hinchazón",
@@ -113,5 +114,15 @@
     "Ju",
     "Vi",
     "Sa"
-  ]
+  ],
+  "settings": "Ajustes",
+  "notifications": "Notificaciones",
+  "notifications_hint": "Recuérdame antes de mi próximo periodo",
+  "language": "Idioma",
+  "show_flow_buttons": "Intensidad del flujo",
+  "show_flow_buttons_hint": "Mostrar opciones de ligero / medio / abundante",
+  "show_log_today": "Registro diario",
+  "show_log_today_hint": "Mostrar formulario de síntomas, estado y notas",
+  "save_settings": "Guardar ajustes",
+  "settings_saved": "Ajustes guardados ✓"
 }

@@ -30,6 +30,8 @@
     "ongoing": "ongoing",
     "log_period_start": "Log Period Start",
     "log_today": "Log Today",
+    "day_log": "Day Log",
+    "log_removed": "Log removed",
     "log_placeholder": "How are you feeling…",
     "date": "Date",
     "symptoms": "Symptoms",
@@ -49,7 +51,6 @@
     "install": "Install",
     "cycle_removed": "Cycle removed",
     "offline": "You're offline — viewing cached data",
-    "enable_notifications": "Enable notifications",
     "symptoms_list": [
         "Cramps",
         "Bloating",
@@ -113,5 +114,15 @@
         "Th",
         "Fr",
         "Sa"
-    ]
+    ],
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "notifications_hint": "Remind me before my next period",
+    "language": "Language",
+    "show_flow_buttons": "Flow intensity",
+    "show_flow_buttons_hint": "Show light / medium / heavy options",
+    "show_log_today": "Daily log",
+    "show_log_today_hint": "Show symptoms, mood and notes form",
+    "save_settings": "Save settings",
+    "settings_saved": "Settings saved ✓"
 }

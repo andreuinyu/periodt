@@ -31,13 +31,8 @@
         <div class="logo">Periodt <span data-i18n="description"></span></div>
       </div>
       <div class="header-actions">
-        <button class="icon-btn" id="notif-btn" data-i18n-title="enable_notifications">🔔</button>
         <button class="icon-btn" id="install-btn" data-i18n-title="install" style="display:none">📲</button>
-        <select id="lang-select" class="icon-btn" style="font-size:12px;">
-          <option value="en">EN</option>
-          <option value="cat">CAT</option>
-          <option value="es">ES</option>
-        </select>
+        <button class="icon-btn" id="settings-btn">⚙️</button>
       </div>
     </header>
 
@@ -182,14 +177,18 @@
           <div class="form-section">
             <label class="form-label" data-i18n="pain_level"></label>
             <input type="range" class="pain-slider" id="pain-level" min="0" max="10" value="0">
-            <div class="pain-labels"><span data-i18n="none"></span><span data-i18n="moderate"></span><span
-                data-i18n="severe"></span></div>
+            <!-- <span id="pain-val">0</span> -->
+            <div class="pain-labels">
+              <span data-i18n="none"></span>
+              <span data-i18n="moderate"></span>
+              <span data-i18n="severe"></span>
+            </div>
+            <div class="form-section">
+              <label class="form-label" data-i18n="notes"></label>
+              <textarea id="log-notes" data-i18n-placeholder="log_placeholder"></textarea>
+            </div>
+            <button class="btn-primary" id="save-log-btn" data-i18n="save_log"></button>
           </div>
-          <div class="form-section">
-            <label class="form-label" data-i18n="notes"></label>
-            <textarea id="log-notes" data-i18n-placeholder="log_placeholder"></textarea>
-          </div>
-          <button class="btn-primary" id="save-log-btn" data-i18n="save_log"></button>
         </div>
 
         <div class="card">
@@ -202,21 +201,78 @@
             data-i18n="mark_period_ended"></button>
         </div>
       </div>
-
-      <!-- ── HISTORY ────────────────────────────────────────────── -->
-      <div class="view" id="view-history">
-        <div class="card">
-          <div class="card-title" data-i18n="past_cycles"></div>
-          <div id="cycle-list">
-            <p style="color:var(--text-muted);font-size:13px;" data-i18n="no_cycles">No cycles logged yet.</p>
+        <!-- ── HISTORY ────────────────────────────────────────────── -->
+        <div class="view" id="view-history">
+          <div class="card">
+            <div class="card-title" data-i18n="past_cycles"></div>
+            <div id="cycle-list">
+              <p style="color:var(--text-muted);font-size:13px;" data-i18n="no_cycles">No cycles logged yet.</p>
+            </div>
           </div>
         </div>
-      </div>
 
     </main>
   </div>
 
-  
+  <!-- ── SETTINGS OVERLAY ──────────────────────────────────── -->
+  <div id="settings-overlay" class="settings-overlay">
+    <div class="settings-sheet">
+      <div class="settings-header">
+        <span data-i18n="settings"></span>
+        <button class="settings-close" id="settings-close">✕</button>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-row">
+          <div>
+            <div class="settings-label" data-i18n="notifications"></div>
+            <div class="settings-hint" data-i18n="notifications_hint"></div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="setting-notif">
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-row">
+          <div class="settings-label" data-i18n="language"></div>
+          <select id="lang-select" class="settings-select">
+            <option value="en">English</option>
+            <option value="cat">Català</option>
+            <option value="es">Español</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-row">
+          <div>
+            <div class="settings-label" data-i18n="show_flow_buttons"></div>
+            <div class="settings-hint" data-i18n="show_flow_buttons_hint"></div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="setting-flow" checked>
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label" data-i18n="show_log_today"></div>
+            <div class="settings-hint" data-i18n="show_log_today_hint"></div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="setting-logtoday" checked>
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="settings-save" data-i18n="save_settings"></button>
+    </div>
+  </div>
+
 </body>
 
 </html>

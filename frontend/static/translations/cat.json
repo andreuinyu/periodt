@@ -30,6 +30,8 @@
   "ongoing": "en curs",
   "log_period_start": "Registrar inici",
   "log_today": "Registrar avui",
+  "day_log": "Registre del dia",
+  "log_removed": "Registre eliminat",
   "log_placeholder": "Com et sents…",
   "date": "Data",
   "symptoms": "Símptomes",
@@ -49,7 +51,6 @@
   "install": "Instal·lar",
   "cycle_removed": "Cicle eliminat",
   "offline": "Ets fora de línia — veient dades locals",
-  "enable_notifications": "Habilitar notificacions",
   "symptoms_list": [
     "Rampes",
     "Inflor",
@@ -113,5 +114,15 @@
     "Dj",
     "Dv",
     "Ds"
-  ]
+  ],
+  "settings": "Configuració",
+  "notifications": "Notificacions",
+  "notifications_hint": "Recorda'm abans del meu pròxim període",
+  "language": "Idioma",
+  "show_flow_buttons": "Intensitat del flux",
+  "show_flow_buttons_hint": "Mostrar opcions de lleuger / mitjà / abundant",
+  "show_log_today": "Registre diari",
+  "show_log_today_hint": "Mostrar formulari de símptomes, estat i notes",
+  "save_settings": "Guardar configuració",
+  "settings_saved": "Configuració guardada ✓"
 }

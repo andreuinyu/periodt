@@ -60,7 +60,7 @@ function applyTranslations() {
 // ── State ──────────────────────────────────────────────────────────────────
 let cycles = [], symptoms = [], predictions = {};
 let calYear, calMonth;
-let selectedFlow = 'medium';
+let selectedFlow = null; // 'medium';
 let selectedSymptoms = new Set();
 let selectedMood = null;
 
@@ -96,15 +96,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupForms();
     setupServiceWorker();
     setupPWA();
+    setupSettings();
     monitorOffline();
 });
+
+function fetchWithTimeout(url, options = {}, timeout = 5000) {
+    return Promise.race([
+        fetch(url, options),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), timeout))
+    ]);
+}
 
 async function loadAll() {
     try {
         const [c, s, p] = await Promise.all([
-            fetch(`${API}/api/cycles`).then(r => r.json()),
-            fetch(`${API}/api/symptoms`).then(r => r.json()),
-            fetch(`${API}/api/predictions`).then(r => r.json()),
+            fetchWithTimeout(`${API}/api/cycles`).then(r => r.json()),
+            fetchWithTimeout(`${API}/api/symptoms`).then(r => r.json()),
+            fetchWithTimeout(`${API}/api/predictions`).then(r => r.json()),
         ]);
         cycles = c; symptoms = s; predictions = p;
         renderHome();
@@ -113,7 +121,7 @@ async function loadAll() {
         renderCalendar();
         renderHistory();
     } catch (e) {
-        console.warn('Offline, using cached UI');
+        console.warn('Offline or request failed', e);
     }
     applyTranslations();
 }
@@ -193,11 +201,6 @@ function renderHome() {
                 ? `${predictions.cycle_length} ${t('days_label')}`
                 : '—';
 
-        // document.getElementById('pred-next').textContent = days === 0 ? 'Today' : days > 0 ? `In ${days} days` : `${Math.abs(days)} days ago`;
-        // document.getElementById('pred-fertile').textContent = predictions.fertile_window
-        //   ? `${fmtShort(predictions.fertile_window.start)} – ${fmtShort(predictions.fertile_window.end)}`
-        //   : '—';
-        // document.getElementById('pred-cycle').textContent = predictions.cycle_length ? `${predictions.cycle_length} days` : '—';
     }
 }
 
@@ -290,13 +293,17 @@ function showDayMenu(e, iso) {
     menu.id = 'day-menu';
     menu.className = 'day-menu';
 
-    //const fmtLabel = new Date(iso + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
     const lang = localStorage.getItem('lang') || 'en';
     const fmtLabel = new Date(iso + 'T00:00:00').toLocaleDateString(localeMap[lang], { month: 'short', day: 'numeric' });
 
+    const showLogToday = localStorage.getItem('setting-logtoday') !== 'false';
     const options = [
         { icon: '🌙', labelKey: 'start_period', action: () => navigateToForm('start-period', iso) },
-        { icon: '✦', labelKey: 'log_today', action: () => navigateToForm('log-today', iso) },
+        ...(showLogToday ? [{
+            icon: '✦',
+            labelKey: 'log_today',
+            action: () => navigateToForm('log-today', iso)
+        }] : []),
         { icon: '◎', labelKey: 'end_period', action: () => navigateToForm('end-period', iso) },
     ];
 
@@ -375,18 +382,64 @@ function navigateToForm(form, iso) {
 // ── History ────────────────────────────────────────────────────────────────
 function renderHistory() {
     const el = document.getElementById('cycle-list');
-    if (!cycles.length) { el.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">No cycles logged yet.</p>'; return; }
-    el.innerHTML = cycles.map(c => {
-        const dur = c.end_date
-            ? Math.round((new Date(c.end_date) - new Date(c.start_date)) / 86400000) + 1
-            : '?';
-        return `<div class="cycle-item">
-                <div class="cycle-dates">
-                  ${fmtShort(c.start_date)}${c.end_date ? ' – ' + fmtShort(c.end_date) : ` (${t('ongoing')})`}
-                  <small>${dur} ${t('days_label')} · ${tVars('flow_label', { flow_intensity: t(c.flow_intensity.toLowerCase()) }).toLowerCase()}</small>
-                </div>
-                <button class="cycle-delete" onclick="deleteCycle(${c.id})">✕</button>
-              </div>`;
+
+    // Combine cycles and symptom logs into one timeline
+    const entries = [
+        ...cycles.map(c => ({ type: 'cycle', data: c })),
+        ...symptoms.map(s => ({ type: 'symptom', data: s }))
+    ];
+
+    if (!entries.length) {
+        el.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">No cycles or logs yet.</p>';
+        return;
+    }
+
+    // Sort descending by date (latest first)
+    entries.sort((a, b) => {
+        const dateA = new Date(a.type === 'cycle' ? a.data.start_date : a.data.log_date);
+        const dateB = new Date(b.type === 'cycle' ? b.data.start_date : b.data.log_date);
+        return dateB - dateA;
+    });
+
+    function translateSymptom(sym) {
+        const found = t('symptoms_list').find(x => x === sym);
+        return found ? found : sym; 
+    };
+    function translateMood(mood) {
+        const found = t('moods').find(x => x.l === mood);
+        return found ? found.l : mood;
+    };
+
+    el.innerHTML = entries.map(entry => {
+        if (entry.type === 'cycle') {
+            const c = entry.data;
+            const dur = c.end_date
+                ? Math.round((new Date(c.end_date) - new Date(c.start_date)) / 86400000) + 1
+                : '?';
+            const flowText = c.flow_intensity
+                ? ` · ${tVars('flow_label', { flow_intensity: t(c.flow_intensity.toLowerCase()) }).toLowerCase()}`
+                : '';
+            return `<div class="cycle-item">
+                        <div class="cycle-dates">
+                        ${fmtShort(c.start_date)}${c.end_date ? ' – ' + fmtShort(c.end_date) : ` (${t('ongoing')})`}
+                        <small>${dur} ${t('days_label')}${flowText}</small>
+                        </div>
+                        <button class="cycle-delete" onclick="deleteCycle(${c.id})">✕</button>
+                    </div>`;
+        } else {
+            const s = entry.data;
+            const symptomText = s.symptoms.map(translateSymptom).join(', ');
+            const moodText = s.mood ? ` · ${t('mood')}: ${translateMood(s.mood)}` : '';
+            const painText = s.pain_level ? ` · ${t('pain_level')}: ${s.pain_level}` : '';
+
+            return `<div class="cycle-item symptom-item">
+                        <div class="cycle-dates">
+                        ${fmtShort(s.log_date)} (${t('day_log')})
+                        <small>${symptomText}${moodText}${painText}</small>
+                        </div>
+                        <button class="cycle-delete" onclick="deleteSymptom(${s.id})">✕</button>
+                    </div>`;
+        }
     }).join('');
 }
 
@@ -394,6 +447,12 @@ async function deleteCycle(id) {
     await fetch(`${API}/api/cycles/${id}`, { method: 'DELETE' });
     await loadAll();
     toast(t('cycle_removed'));
+}
+
+async function deleteSymptom(id) {
+    await fetch(`${API}/api/symptoms/${id}`, { method: 'DELETE' });
+    await loadAll();
+    toast(t('log_removed'));
 }
 
 // ── Forms ──────────────────────────────────────────────────────────────────
@@ -414,7 +473,10 @@ function setupForms() {
         const res = await fetch(`${API}/api/cycles`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ start_date: date, flow_intensity: selectedFlow })
+            body: JSON.stringify({
+                start_date: date,
+                ...(selectedFlow !== null && { flow_intensity: selectedFlow })
+            })
         });
         if (res.ok) { await loadAll(); toast('Period logged ✓'); }
     });
@@ -455,14 +517,8 @@ function setupForms() {
             document.querySelectorAll('.symptom-chip').forEach(c => c.classList.remove('selected'));
             document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
             document.getElementById('pain-level').value = 0;
-            document.getElementById('pain-val').textContent = '0';
             document.getElementById('log-notes').value = '';
         }
-    });
-
-    // Pain slider
-    document.getElementById('pain-level').addEventListener('input', e => {
-        document.getElementById('pain-val').textContent = e.target.value;
     });
 }
 
@@ -530,17 +586,17 @@ function setupPWA() {
     document.getElementById('install-btn').addEventListener('click', install);
     document.getElementById('install-banner-btn').addEventListener('click', install);
 
-    document.getElementById('notif-btn').addEventListener('click', async () => {
-        if (!('Notification' in window)) return toast('Notifications not supported');
-        const perm = await Notification.requestPermission();
-        if (perm === 'granted') {
-            toast('Notifications enabled 🔔');
-            document.getElementById('notif-btn').classList.add('active');
-            await subscribePush();
-        } else {
-            toast('Notifications blocked');
-        }
-    });
+    // document.getElementById('notif-btn').addEventListener('click', async () => {
+    //     if (!('Notification' in window)) return toast('Notifications not supported');
+    //     const perm = await Notification.requestPermission();
+    //     if (perm === 'granted') {
+    //         toast('Notifications enabled 🔔');
+    //         document.getElementById('notif-btn').classList.add('active');
+    //         await subscribePush();
+    //     } else {
+    //         toast('Notifications blocked');
+    //     }
+    // });
 }
 
 async function subscribePush() {
@@ -565,6 +621,76 @@ function monitorOffline() {
     window.addEventListener('online', () => bar.classList.remove('show'));
     if (!navigator.onLine) bar.classList.add('show');
 }
+
+// ── Settings ───────────────────────────────────────────────────────────────
+function applyFormVisibility() {
+    const showFlow = localStorage.getItem('setting-flow') !== 'false';
+    const showLogToday = localStorage.getItem('setting-logtoday') !== 'false';
+
+    const flowCard = document.querySelector('.form-section:has(.flow-row)');
+    const logTodayCard = document.querySelector('.card:has(#save-log-btn)');
+    if (flowCard) flowCard.style.display = showFlow ? '' : 'none';
+    if (logTodayCard) logTodayCard.style.display = showLogToday ? '' : 'none';
+}
+
+function setupSettings() {
+    const overlay = document.getElementById('settings-overlay');
+    const langSelect = document.getElementById('lang-select');
+
+    // Load saved values into controls
+    const loadSettingsUI = () => {
+        langSelect.value = localStorage.getItem('lang') || 'en';
+        document.getElementById('setting-flow').checked = localStorage.getItem('setting-flow') !== 'false';
+        document.getElementById('setting-logtoday').checked = localStorage.getItem('setting-logtoday') !== 'false';
+        // Reflect current notification permission
+        const notifPerm = 'Notification' in window ? Notification.permission : 'denied';
+        document.getElementById('setting-notif').checked = notifPerm === 'granted';
+    };
+
+    // Open
+    document.getElementById('settings-btn').addEventListener('click', () => {
+        loadSettingsUI();
+        overlay.classList.add('open');
+    });
+
+    // Close without saving
+    document.getElementById('settings-close').addEventListener('click', () => {
+        overlay.classList.remove('open');
+    });
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.classList.remove('open');
+    });
+
+    // Language change live-previews the UI
+    langSelect.addEventListener('change', async () => {
+        localStorage.setItem('lang', langSelect.value);
+        await loadTranslations(langSelect.value);
+        applyTranslations();
+    });
+
+    // Save button
+    document.getElementById('settings-save').addEventListener('click', async () => {
+        // Notifications
+        const wantsNotif = document.getElementById('setting-notif').checked;
+        if (wantsNotif && 'Notification' in window && Notification.permission !== 'granted') {
+            const perm = await Notification.requestPermission();
+            if (perm === 'granted') await subscribePush();
+            else document.getElementById('setting-notif').checked = false;
+        }
+
+        // Persist form visibility prefs
+        localStorage.setItem('setting-flow', document.getElementById('setting-flow').checked);
+        localStorage.setItem('setting-logtoday', document.getElementById('setting-logtoday').checked);
+
+        applyFormVisibility();
+        overlay.classList.remove('open');
+        toast(t('settings_saved'));
+    });
+
+    // Apply on load
+    applyFormVisibility();
+}
+
 
 // ── Toast ──────────────────────────────────────────────────────────────────
 function toast(msg) {

@@ -52,6 +52,7 @@ open http://localhost:3111
 | DELETE | `/api/cycles/{id}` | Delete a cycle |
 | GET | `/api/symptoms` | List symptom logs |
 | POST | `/api/symptoms` | Log symptoms |
+| DELETE | `/api/symptoms/{id}` | Delete a symptom log |
 | GET | `/api/predictions` | Get next period prediction |
 | POST | `/api/push/subscribe` | Register push subscription |
 

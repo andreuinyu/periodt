@@ -38,7 +38,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             start_date TEXT NOT NULL,
             end_date TEXT,
-            flow_intensity TEXT DEFAULT 'medium',
+            flow_intensity TEXT CHECK(flow_intensity IN ('light','medium','heavy') OR flow_intensity IS NULL),
             notes TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
@@ -70,7 +70,7 @@ init_db()
 class CycleCreate(BaseModel):
     start_date: str
     end_date: Optional[str] = None
-    flow_intensity: Optional[str] = "medium"
+    flow_intensity: Optional[str] = None #"medium"
     notes: Optional[str] = None
 
 class CycleUpdate(BaseModel):
@@ -146,6 +146,14 @@ def log_symptom(log: SymptomLog, db: sqlite3.Connection = Depends(get_db)):
     d["symptoms"] = json.loads(d["symptoms"])
     return d
 
+@app.delete("/api/symptoms/{log_id}", status_code=204)
+def delete_symptom(log_id: int, db: sqlite3.Connection = Depends(get_db)):
+    cur = db.execute("DELETE FROM symptoms WHERE id=?", (log_id,))
+    db.commit()
+    if cur.rowcount == 0:
+        # If no row was deleted, return 404
+        raise HTTPException(status_code=404, detail="Symptom log not found")
+        
 # ── Predictions ───────────────────────────────────────────────────────────────
 
 @app.get("/api/predictions")
