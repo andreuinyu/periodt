@@ -58,8 +58,7 @@
         <div id="install-banner">
           <span style="font-size:28px">📲</span>
           <p>
-            <strong data-i18n="install_title"></strong>
-            <span data-i18n="install_desc"></span>
+            <span data-i18n="install_msg"></span>
           </p>
           <button class="btn-secondary" id="install-banner-btn" data-i18n="install"></button>
         </div>
@@ -208,7 +207,14 @@
           <div class="card">
             <div class="card-title" data-i18n="past_cycles"></div>
             <div id="cycle-list">
-              <p style="color:var(--text-muted);font-size:13px;" data-i18n="no_cycles">No cycles logged yet.</p>
+              <p style="color:var(--text-muted);font-size:13px;" data-i18n="no_cycles"></p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title" data-i18n="cycles_duration"></div>
+            <div id="cycles-histogram">
+              <p style="color:var(--text-muted);font-size:13px;" data-i18n="no_cycles"></p>
             </div>
           </div>
         </div>

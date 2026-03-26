@@ -46,9 +46,11 @@
     "end_date": "End Date",
     "mark_period_ended": "Mark Period Ended",
     "past_cycles": "Past Cycles",
+    "cycles_duration": "Cycles duration",
     "no_cycles": "No cycles logged yet.",
     "install_msg": "Add Periodt to your home screen for the best experience — offline access and notifications.",
     "install": "Install",
+    "install_success":"Periodt installed! ✓",
     "cycle_removed": "Cycle removed",
     "offline": "You're offline — viewing cached data",
     "symptoms_list": [

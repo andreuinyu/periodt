@@ -46,9 +46,11 @@
   "end_date": "Fecha final",
   "mark_period_ended": "Marcar como finalizado",
   "past_cycles": "Ciclos anteriores",
+  "cycles_duration": "Duración de los ciclos",
   "no_cycles": "Aún no hay ciclos.",
   "install_msg": "Añade Periodt a tu pantalla de inicio para mejor experiencia.",
   "install": "Instalar",
+  "install_success":"Periodt instalada! ✓",
   "cycle_removed": "Ciclo eliminado",
   "offline": "Sin conexión — mostrando datos guardados",
   "symptoms_list": [

@@ -719,6 +719,101 @@ textarea {
     color: #e06a6a;
 }
 
+/* ── Cycle length histogram ───────────────────────────────────────────────────── */
+/* Scroll container */
+.histogram-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 4px; 
+    scroll-snap-type: x mandatory;
+    position: relative;
+    flex-direction: row-reverse;
+}
+.histogram-scroll::before,
+.histogram-scroll::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 20px;
+    pointer-events: none;
+    z-index: 1;
+    transition: opacity 0.2s;
+}
+
+/* .histogram-scroll::before {
+    left: 0;
+    background: linear-gradient(to right, var(--surface, #fff), transparent);
+}
+
+.histogram-scroll::after {
+    right: 0;
+    background: linear-gradient(to left, var(--surface, #fff), transparent);
+}
+.histogram-scroll::before,
+.histogram-scroll::after {
+    opacity: 0; 
+}
+
+.histogram-scroll.show-left-fade::before {
+    opacity: 1;
+}
+
+.histogram-scroll.show-right-fade::after {
+    opacity: 1;
+} */
+
+/* Histogram container */
+.histogram {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 120px;
+    min-width: max-content;
+    /* overflow-x: auto; */
+}
+
+/* Each bar + label */
+.histogram-item {
+    width: 64px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    scroll-snap-align: end;
+    height: 100%;
+}
+
+/* The actual bar */
+.histogram-bar {
+    display: block;
+    width: 100%;
+    background: linear-gradient(180deg, var(--rose-soft), var(--rose));
+    border-radius: 8px 8px 4px 4px;
+    transition: height 0.3s ease;
+    box-shadow: 0 4px 12px rgba(201, 111, 168, 0.25);
+    animation: growBar 0.6s ease;
+}
+@keyframes growBar {
+    from {
+        height: 0;
+    }
+}
+
+/* Value label under bar */
+.histogram-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+}
+
+/* Empty state */
+.histogram-empty {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
 /* ── Toast ───────────────────────────────────────────────────── */
 #toast {
     position: fixed;
@@ -1043,3 +1138,4 @@ textarea {
     transform: translateY(0);
     opacity: 1;
 }
+

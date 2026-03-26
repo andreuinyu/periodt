@@ -120,6 +120,7 @@ async function loadAll() {
         calMonth = new Date().getMonth();
         renderCalendar();
         renderHistory();
+        renderCycleHistogram();
     } catch (e) {
         console.warn('Offline or request failed', e);
     }
@@ -455,6 +456,74 @@ async function deleteSymptom(id) {
     toast(t('log_removed'));
 }
 
+function getCycleLengths() {
+    if (!cycles || cycles.length < 2) return [];
+
+    return cycles
+        .map(c => new Date(c.start_date))
+        .sort((a, b) => a - b) // oldest → newest
+        .map((date, i, arr) => {
+            if (i === 0) return null;
+            const prev = arr[i - 1];
+            const diff = (date - prev) / (1000 * 60 * 60 * 24);
+            return Math.round(diff);
+        })
+        .filter(Boolean);
+}
+
+function renderCycleHistogram() {
+    const container = document.getElementById('cycles-histogram');
+    const durations = getCycleLengths();
+
+
+    if (!durations.length) {
+        container.innerHTML = `<p class="histogram-empty" data-i18n="no_cycles"></p>`;
+        return;
+    }
+
+    const max = Math.max(...durations);
+
+    container.innerHTML = `
+        <div class="histogram-scroll">
+            <div class="histogram">
+                ${durations.map(d => {
+                    const height = (d / max) * 100;
+                    return `
+                        <div class="histogram-item">
+                            <div class="histogram-bar" style="height:${height}%"></div>
+                            <span class="histogram-label">${d} ${t('days')}</span>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `;
+
+    const scroll = document.querySelector('.histogram-scroll');
+
+    function updateFade() {
+        const canScroll = scroll.scrollWidth > scroll.clientWidth;
+        if (!canScroll) {
+            scroll.classList.remove('show-left-fade', 'show-right-fade');
+            return;
+        }
+
+        const atLeft = scroll.scrollLeft <= 0.5;
+        const atRight = scroll.scrollLeft + scroll.clientWidth >= scroll.scrollWidth - 0.5;
+
+        scroll.classList.toggle('show-left-fade', !atLeft);
+        scroll.classList.toggle('show-right-fade', !atRight);
+    }
+
+    // Attach events
+    scroll.addEventListener('scroll', updateFade);
+    window.addEventListener('resize', updateFade);
+    requestAnimationFrame(() => {
+        scroll.scrollLeft = scroll.scrollWidth - scroll.clientWidth;
+        updateFade();
+    });
+}
+
 // ── Forms ──────────────────────────────────────────────────────────────────
 function setupForms() {
     // Flow buttons
@@ -577,7 +646,7 @@ function setupPWA() {
                 if (c.outcome === 'accepted') {
                     document.getElementById('install-btn').style.display = 'none';
                     document.getElementById('install-banner').classList.remove('visible');
-                    toast('Periodt installed! ✓');
+                    toast(t('install_success'));
                 }
                 deferredPrompt = null;
             });
@@ -586,17 +655,6 @@ function setupPWA() {
     document.getElementById('install-btn').addEventListener('click', install);
     document.getElementById('install-banner-btn').addEventListener('click', install);
 
-    // document.getElementById('notif-btn').addEventListener('click', async () => {
-    //     if (!('Notification' in window)) return toast('Notifications not supported');
-    //     const perm = await Notification.requestPermission();
-    //     if (perm === 'granted') {
-    //         toast('Notifications enabled 🔔');
-    //         document.getElementById('notif-btn').classList.add('active');
-    //         await subscribePush();
-    //     } else {
-    //         toast('Notifications blocked');
-    //     }
-    // });
 }
 
 async function subscribePush() {
