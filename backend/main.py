@@ -1,9 +1,13 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi_cache.decorator import cache
+from fastapi_cache.backends.inmemory import InMemoryBackend
+from fastapi_cache import FastAPICache
 from pydantic import BaseModel
 from typing import Optional, List
+import logging
 import sqlite3
 import json
 from datetime import date, datetime, timedelta
@@ -11,6 +15,18 @@ from pathlib import Path
 import os
 
 app = FastAPI(title="Period Tracker API")
+
+@app.on_event("startup")
+async def startup():
+    FastAPICache.init(InMemoryBackend())
+
+
+logger = logging.getLogger("uvicorn.error")
+
+@app.exception_handler(Exception)
+async def all_exception_handler(request, exc):
+    logger.exception(f"Unhandled error: {exc}")
+    return JSONResponse(status_code=500, content={"detail": str(exc)})
 
 app.add_middleware(
     CORSMiddleware,
@@ -22,7 +38,7 @@ app.add_middleware(
 DB_PATH = "/data/tracker.db"
 
 def get_db():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     try:
         yield conn
@@ -91,6 +107,7 @@ class PushSubscription(BaseModel):
 # ── Cycles ───────────────────────────────────────────────────────────────────
 
 @app.get("/api/cycles")
+@cache(expire=60)
 def get_cycles(db: sqlite3.Connection = Depends(get_db)):
     rows = db.execute("SELECT * FROM cycles ORDER BY start_date DESC").fetchall()
     return [dict(r) for r in rows]
@@ -125,6 +142,7 @@ def delete_cycle(cycle_id: int, db: sqlite3.Connection = Depends(get_db)):
 # ── Symptoms ─────────────────────────────────────────────────────────────────
 
 @app.get("/api/symptoms")
+@cache(expire=60)
 def get_symptoms(db: sqlite3.Connection = Depends(get_db)):
     rows = db.execute("SELECT * FROM symptoms ORDER BY log_date DESC").fetchall()
     result = []
@@ -157,6 +175,7 @@ def delete_symptom(log_id: int, db: sqlite3.Connection = Depends(get_db)):
 # ── Predictions ───────────────────────────────────────────────────────────────
 
 @app.get("/api/predictions")
+@cache(expire=60)
 def get_predictions(db: sqlite3.Connection = Depends(get_db)):
     rows = db.execute(
         "SELECT start_date FROM cycles WHERE end_date IS NOT NULL ORDER BY start_date DESC LIMIT 6"

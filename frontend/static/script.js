@@ -100,21 +100,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     monitorOffline();
 });
 
-function fetchWithTimeout(url, options = {}, timeout = 5000) {
+async function fetchWithTimeout(url, options = {}, timeout = 5000) {
     return Promise.race([
         fetch(url, options),
         new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), timeout))
     ]);
 }
 
+async function fetchWithRetry(url, options, timeout, retries = 5) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            return await fetchWithTimeout(url, options, timeout);
+        } catch (error) {
+            if (i === retries - 1) throw error;
+            await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));
+        }
+    }
+}
+
 async function loadAll() {
+    //showLoadingIndicator(true); // start your spinner or "loading..." message
+
     try {
-        const [c, s, p] = await Promise.all([
-            fetchWithTimeout(`${API}/api/cycles`).then(r => r.json()),
-            fetchWithTimeout(`${API}/api/symptoms`).then(r => r.json()),
-            fetchWithTimeout(`${API}/api/predictions`).then(r => r.json()),
+        const results = await Promise.allSettled([
+            fetchWithRetry(`${API}/api/cycles`).then(r => r.json()),
+            fetchWithRetry(`${API}/api/symptoms`).then(r => r.json()),
+            fetchWithRetry(`${API}/api/predictions`).then(r => r.json())
         ]);
-        cycles = c; symptoms = s; predictions = p;
+        cycles = results[0].status === 'fulfilled' ? results[0].value : [];
+        symptoms = results[1].status === 'fulfilled' ? results[1].value : [];
+        predictions = results[2].status === 'fulfilled' ? results[2].value : [];
+
+        if (results.every(r => r.status === 'rejected')) {
+            console.warn('whoops, all data fetches failed', results.map(r => r.reason));
+        }
+
         renderHome();
         calYear = new Date().getFullYear();
         calMonth = new Date().getMonth();
@@ -122,9 +142,10 @@ async function loadAll() {
         renderHistory();
         renderCycleHistogram();
     } catch (e) {
-        console.warn('Offline or request failed', e);
+        console.warn('Unexpected error', e);
     }
     applyTranslations();
+    //showLoadingIndicator(false); // hide spinner
 }
 
 // ── Nav ────────────────────────────────────────────────────────────────────
