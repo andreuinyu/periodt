@@ -47,6 +47,9 @@ function applyTranslations() {
     if (typeof renderHistory === 'function') {
         renderHistory();
     }
+    if (typeof renderCycleHistogram === 'function') {
+        renderCycleHistogram();
+    }
     if (typeof buildSymptomGrid === 'function') {
         buildSymptomGrid();
     }
@@ -512,7 +515,7 @@ function renderCycleHistogram() {
                     return `
                         <div class="histogram-item">
                             <div class="histogram-bar" style="height:${height}%"></div>
-                            <span class="histogram-label">${d} ${t('days')}</span>
+                            <span class="histogram-label">${d} ${t('days_label')}</span>
                         </div>
                     `;
                 }).join('')}
