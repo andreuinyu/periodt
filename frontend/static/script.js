@@ -510,11 +510,12 @@ function renderCycleHistogram() {
     container.innerHTML = `
         <div class="histogram-scroll">
             <div class="histogram">
-                ${durations.map(d => {
-                    const height = (d / max) * 100;
+                ${durations.map((d, i) => {
+                    const BASELINE = 10;
+                    const height = Math.round(100 * Math.max(0, d - BASELINE) / (max - BASELINE));
                     return `
                         <div class="histogram-item">
-                            <div class="histogram-bar" style="height:${height}%"></div>
+                            <div class="histogram-bar" style="height:${height}px; animation-delay: ${i * 50}ms"></div>
                             <span class="histogram-label">${d} ${t('days_label')}</span>
                         </div>
                     `;
@@ -528,15 +529,13 @@ function renderCycleHistogram() {
     function updateFade() {
         const canScroll = scroll.scrollWidth > scroll.clientWidth;
         if (!canScroll) {
-            scroll.classList.remove('show-left-fade', 'show-right-fade');
+            container.classList.remove('show-left-fade', 'show-right-fade');
             return;
         }
-
         const atLeft = scroll.scrollLeft <= 0.5;
         const atRight = scroll.scrollLeft + scroll.clientWidth >= scroll.scrollWidth - 0.5;
-
-        scroll.classList.toggle('show-left-fade', !atLeft);
-        scroll.classList.toggle('show-right-fade', !atRight);
+        container.classList.toggle('show-left-fade', !atLeft);
+        container.classList.toggle('show-right-fade', !atRight);
     }
 
     // Attach events

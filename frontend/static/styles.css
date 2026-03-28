@@ -727,41 +727,37 @@ textarea {
     padding-bottom: 4px; 
     scroll-snap-type: x mandatory;
     position: relative;
-    flex-direction: row-reverse;
+    
 }
-.histogram-scroll::before,
-.histogram-scroll::after {
+#cycles-histogram {
+    position: relative;
+}
+
+#cycles-histogram::before,
+#cycles-histogram::after {
     content: "";
     position: absolute;
     top: 0;
-    bottom: 0;
+    height: 120px; /* match .histogram height */
     width: 20px;
     pointer-events: none;
     z-index: 1;
     transition: opacity 0.2s;
+    opacity: 0;
 }
 
-/* .histogram-scroll::before {
+#cycles-histogram::before {
     left: 0;
-    background: linear-gradient(to right, var(--surface, #fff), transparent);
+    background: linear-gradient(to right, var(--surface), transparent);
 }
 
-.histogram-scroll::after {
+#cycles-histogram::after {
     right: 0;
-    background: linear-gradient(to left, var(--surface, #fff), transparent);
-}
-.histogram-scroll::before,
-.histogram-scroll::after {
-    opacity: 0; 
+    background: linear-gradient(to left, var(--surface), transparent);
 }
 
-.histogram-scroll.show-left-fade::before {
-    opacity: 1;
-}
-
-.histogram-scroll.show-right-fade::after {
-    opacity: 1;
-} */
+#cycles-histogram.show-left-fade::before { opacity: 1; }
+#cycles-histogram.show-right-fade::after { opacity: 1; }
 
 /* Histogram container */
 .histogram {
@@ -770,7 +766,8 @@ textarea {
     gap: 8px;
     height: 120px;
     min-width: max-content;
-    /* overflow-x: auto; */
+    flex-direction: row-reverse;
+    /* overflow-y: auto; */
 }
 
 /* Each bar + label */
@@ -779,7 +776,7 @@ textarea {
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    /* justify-content: flex-end; */
     align-items: center;
     scroll-snap-align: end;
     height: 100%;
@@ -788,21 +785,25 @@ textarea {
 /* The actual bar */
 .histogram-bar {
     display: block;
+    margin-top: auto;
     width: 100%;
     background: linear-gradient(180deg, var(--rose-soft), var(--rose));
     border-radius: 8px 8px 4px 4px;
     transition: height 0.3s ease;
     box-shadow: 0 4px 12px rgba(201, 111, 168, 0.25);
-    animation: growBar 0.6s ease;
+    transform: scaleY(0);
+    transform-origin: bottom;
+    animation: growBar 0.6s ease forwards;
 }
 @keyframes growBar {
-    from {
-        height: 0;
+    to {
+        transform: scaleY(1);
     }
 }
 
 /* Value label under bar */
 .histogram-label {
+    flex-shrink: 0;
     font-size: 12px;
     color: var(--text-muted);
     margin-top: 6px;
