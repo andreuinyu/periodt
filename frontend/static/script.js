@@ -63,7 +63,7 @@ function applyTranslations() {
 // ── State ──────────────────────────────────────────────────────────────────
 let cycles = [], symptoms = [], predictions = {};
 let calYear, calMonth;
-let selectedFlow = null; // 'medium';
+let selectedFlow = 0;
 let selectedSymptoms = new Set();
 let selectedMood = null;
 
@@ -416,7 +416,7 @@ function renderHistory() {
     ];
 
     if (!entries.length) {
-        el.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">No cycles or logs yet.</p>';
+        el.innerHTML = `<p style="color:var(--text-muted);font-size:13px;">${t('no_cycles')}</p>`;
         return;
     }
 
@@ -427,14 +427,15 @@ function renderHistory() {
         return dateB - dateA;
     });
 
-    function translateSymptom(sym) {
-        const found = t('symptoms_list').find(x => x === sym);
-        return found ? found : sym; 
-    };
-    function translateMood(mood) {
-        const found = t('moods').find(x => x.l === mood);
-        return found ? found.l : mood;
-    };
+    function translateSymptom(idx) {
+        const list = t('symptoms_list');
+        return list[idx] ?? idx;
+    }
+
+    function translateMood(idx) {
+        const moods = t('moods');
+        return moods[idx]?.l ?? idx;
+    }
 
     el.innerHTML = entries.map(entry => {
         if (entry.type === 'cycle') {
@@ -442,8 +443,9 @@ function renderHistory() {
             const dur = c.end_date
                 ? Math.round((new Date(c.end_date) - new Date(c.start_date)) / 86400000) + 1
                 : '?';
+            const FLOW_KEYS = [null, 'light', 'medium', 'heavy'];
             const flowText = c.flow_intensity
-                ? ` · ${tVars('flow_label', { flow_intensity: t(c.flow_intensity.toLowerCase()) }).toLowerCase()}`
+                ? ` · ${tVars('flow_label', { flow_intensity: t(FLOW_KEYS[c.flow_intensity]) })}`
                 : '';
             return `<div class="cycle-item">
                         <div class="cycle-dates">
@@ -502,7 +504,7 @@ function renderCycleHistogram() {
 
 
     if (!durations.length) {
-        container.innerHTML = `<p class="histogram-empty" data-i18n="no_cycles"></p>`;
+        container.innerHTML = `<p class="histogram-empty" data-i18n="no_cycles">${t('no_cycles')}</p>`;
         return;
     }
 
@@ -550,61 +552,71 @@ function renderCycleHistogram() {
 
 // ── Forms ──────────────────────────────────────────────────────────────────
 function setupForms() {
+    function onEnter(elementId, callback) {
+        document.getElementById(elementId).addEventListener('keydown', e => {
+                if (e.key === 'Enter') callback();
+            });
+    }
     // Flow buttons
     document.querySelectorAll('.flow-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.flow-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
-            selectedFlow = btn.dataset.flow;
+            selectedFlow = parseInt(btn.dataset.index);
         });
     });
 
     // Quick log
-    document.getElementById('quick-log-btn').addEventListener('click', async () => {
+    const quickLogBtn = document.getElementById('quick-log-btn');
+    quickLogBtn.addEventListener('click', async () => {
         const date = document.getElementById('quick-start-date').value;
-        if (!date) return toast('Please select a date');
+        if (!date) return toast(t('invalid_date'));
         const res = await fetch(`${API}/api/cycles`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 start_date: date,
-                ...(selectedFlow !== null && { flow_intensity: selectedFlow })
+                flow_intensity: selectedFlow ?? 0  // always send, default 0
             })
         });
-        if (res.ok) { await loadAll(); toast('Period logged ✓'); }
+        if (res.ok) { await loadAll(); toast(t('period_logged')); }
     });
+    onEnter('quick-start-date', () => quickLogBtn.click());
 
     // End period
-    document.getElementById('end-period-btn').addEventListener('click', async () => {
+    const endPeriodBtn = document.getElementById('end-period-btn');
+    endPeriodBtn.addEventListener('click', async () => {
         const endDate = document.getElementById('end-date').value;
         const active = cycles.find(c => !c.end_date);
-        if (!active) return toast('No active period to end');
+        if (!active) return toast(t('no_active_period'));
         const res = await fetch(`${API}/api/cycles/${active.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ end_date: endDate })
         });
-        if (res.ok) { await loadAll(); toast('Period ended ✓'); }
+        if (res.ok) { await loadAll(); toast(t('period_ended')); }
     });
+    onEnter('end-date', () => endPeriodBtn.click());
 
     // Symptom save
-    document.getElementById('save-log-btn').addEventListener('click', async () => {
+    const saveLogBtn = document.getElementById('save-log-btn');
+    saveLogBtn.addEventListener('click', async () => {
         const date = document.getElementById('log-date').value;
-        if (!date) return toast('Please select a date');
+        if (!date) return toast(t('invalid_date'));
         const res = await fetch(`${API}/api/symptoms`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 log_date: date,
-                symptoms: [...selectedSymptoms],
-                mood: selectedMood,
+                symptoms: [...selectedSymptoms],   // now a Set of ints
+                mood: selectedMood,                // make sure this is also an int now
                 pain_level: parseInt(document.getElementById('pain-level').value),
                 notes: document.getElementById('log-notes').value
             })
         });
         if (res.ok) {
             await loadAll();
-            toast('Log saved ✓');
+            toast(t('symptoms_logged'));
             selectedSymptoms.clear();
             selectedMood = null;
             document.querySelectorAll('.symptom-chip').forEach(c => c.classList.remove('selected'));
@@ -613,34 +625,37 @@ function setupForms() {
             document.getElementById('log-notes').value = '';
         }
     });
+    onEnter('log-date', () => saveLogBtn.click());
+    onEnter('log-notes', () => saveLogBtn.click());
 }
 
 function buildSymptomGrid() {
-    SYMPTOMS = t('symptoms_list');
+    const SYMPTOMS = t('symptoms_list');
     const grid = document.getElementById('symptom-grid');
-    grid.innerHTML = SYMPTOMS.map(s =>
-        `<button class="symptom-chip" data-sym="${s}">${s}</button>`
+    grid.innerHTML = SYMPTOMS.map((s, i) =>
+        `<button class="symptom-chip" data-index="${i}">${s}</button>`
     ).join('');
     grid.querySelectorAll('.symptom-chip').forEach(chip => {
         chip.addEventListener('click', () => {
             chip.classList.toggle('selected');
-            if (chip.classList.contains('selected')) selectedSymptoms.add(chip.dataset.sym);
-            else selectedSymptoms.delete(chip.dataset.sym);
+            const idx = parseInt(chip.dataset.index);
+            if (chip.classList.contains('selected')) selectedSymptoms.add(idx);
+            else selectedSymptoms.delete(idx);
         });
     });
 }
 
 function buildMoodRow() {
-    MOODS = t('moods');
+    const MOODS = t('moods');
     const row = document.getElementById('mood-row');
-    row.innerHTML = MOODS.map(m =>
-        `<button class="mood-btn" data-mood="${m.l}"><span>${m.e}</span><span>${m.l}</span></button>`
+    row.innerHTML = MOODS.map((m, i) =>
+        `<button class="mood-btn" data-index="${i}"><span>${m.e}</span><span>${m.l}</span></button>`
     ).join('');
     row.querySelectorAll('.mood-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             row.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
-            selectedMood = btn.dataset.mood;
+            selectedMood = parseInt(btn.dataset.index);
         });
     });
 }

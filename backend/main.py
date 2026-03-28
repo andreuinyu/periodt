@@ -5,7 +5,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi_cache.decorator import cache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi_cache import FastAPICache
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional, List
 import logging
 import sqlite3
@@ -54,7 +54,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             start_date TEXT NOT NULL,
             end_date TEXT,
-            flow_intensity TEXT CHECK(flow_intensity IN ('light','medium','heavy') OR flow_intensity IS NULL),
+            flow_intensity INTEGER CHECK(flow_intensity BETWEEN 0 AND 3) DEFAULT 0,
             notes TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
@@ -63,8 +63,8 @@ def init_db():
         CREATE TABLE IF NOT EXISTS symptoms (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             log_date TEXT NOT NULL,
-            symptoms TEXT NOT NULL,
-            mood TEXT,
+            symptoms TEXT NOT NULL, 
+            mood INTEGER,
             pain_level INTEGER DEFAULT 0,
             notes TEXT
         )
@@ -86,20 +86,48 @@ init_db()
 class CycleCreate(BaseModel):
     start_date: str
     end_date: Optional[str] = None
-    flow_intensity: Optional[str] = None #"medium"
+    flow_intensity: Optional[int] = 0
     notes: Optional[str] = None
+
+    @field_validator("flow_intensity")
+    @classmethod
+    def flow_must_be_valid(cls, v):
+        if v is not None and v not in (0, 1, 2, 3):
+            raise ValueError("flow_intensity must be 0–3")
+        return v
 
 class CycleUpdate(BaseModel):
     end_date: Optional[str] = None
-    flow_intensity: Optional[str] = None
+    flow_intensity: Optional[int] = 0
     notes: Optional[str] = None
+
+    @field_validator("flow_intensity")
+    @classmethod
+    def flow_must_be_valid(cls, v):
+        if v is not None and v not in (0, 1, 2, 3):
+            raise ValueError("flow_intensity must be 0–3")
+        return v
 
 class SymptomLog(BaseModel):
     log_date: str
-    symptoms: List[str]
-    mood: Optional[str] = None
+    symptoms: List[int]
+    mood: Optional[int] = None
     pain_level: Optional[int] = 0
     notes: Optional[str] = None
+
+    @field_validator("symptoms")
+    @classmethod
+    def symptoms_must_be_valid(cls, v):
+        if any(idx < 0 for idx in v):
+            raise ValueError("Symptom indexes must be non-negative integers")
+        return v
+
+    @field_validator("mood")
+    @classmethod
+    def mood_must_be_valid(cls, v):
+        if v is not None and v < 0:
+            raise ValueError("Mood index must be a non-negative integer")
+        return v
 
 class PushSubscription(BaseModel):
     subscription: dict
@@ -127,7 +155,8 @@ def update_cycle(cycle_id: int, update: CycleUpdate, db: sqlite3.Connection = De
     cycle = db.execute("SELECT * FROM cycles WHERE id=?", (cycle_id,)).fetchone()
     if not cycle:
         raise HTTPException(404, "Cycle not found")
-    fields = {k: v for k, v in update.dict().items() if v is not None}
+    fields = {k: v for k, v in update.dict().items() if v is not None}  # 0 is falsy — fix:
+    fields = {k: v for k, v in update.dict(exclude_unset=True).items()}
     if fields:
         sets = ", ".join(f"{k}=?" for k in fields)
         db.execute(f"UPDATE cycles SET {sets} WHERE id=?", (*fields.values(), cycle_id))
@@ -148,9 +177,10 @@ def get_symptoms(db: sqlite3.Connection = Depends(get_db)):
     result = []
     for r in rows:
         d = dict(r)
-        d["symptoms"] = json.loads(d["symptoms"])
+        d["symptoms"] = json.loads(d["symptoms"])  # "[0,3,5]" → [0, 3, 5]
         result.append(d)
     return result
+
 
 @app.post("/api/symptoms", status_code=201)
 def log_symptom(log: SymptomLog, db: sqlite3.Connection = Depends(get_db)):

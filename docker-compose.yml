@@ -10,7 +10,3 @@ services:
     restart: unless-stopped
     environment:
       - PYTHONUNBUFFERED=1
-
-volumes:
-  periodt_data:
-    driver: local
