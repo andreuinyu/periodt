@@ -372,6 +372,7 @@ function showDayMenu(e, iso) {
     };
     // Use capture + tiny delay so the originating click doesn't immediately dismiss
     setTimeout(() => document.addEventListener('click', dismiss, true), 0);
+    document.addEventListener('scroll', dismiss, true);
 }
 
 function navigateToForm(form, iso) {
