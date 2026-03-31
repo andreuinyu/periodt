@@ -9,4 +9,6 @@ services:
       - ./periodt_data:/data
     restart: unless-stopped
     environment:
-      - PYTHONUNBUFFERED=1
+      - TZ=UTC
+      - NOTIFY_DAYS_BEFORE=3
+      - NOTIFY_HOUR=9

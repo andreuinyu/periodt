@@ -1,8 +1,86 @@
 # 🌙 Periodt — Period Tracker PWA
 
-A privacy-first, self-hosted, dead simple period tracking Progressive Web App. Data stays locally
+A privacy-first, self-hosted, dead simple period tracking Progressive Web App. Data stays in your server of choice and you can use it on the web or on your phone as an app.
 
-## Stack
+### PWA Features
+
+- **Offline support** — service worker caches the app shell; API calls fall back gracefully when offline
+- **Home screen install** — an install banner appears automatically in supported browsers (Chrome, Edge, Safari on iOS via "Add to Home Screen")
+- **Push notifications** — Opt in in the Settings page; the backend stores subscriptions in SQLite (⚠️IMPORTANT⚠️: this will only work if you access your Periodt service via HTTPS.)
+
+---
+
+## Setup with Docker Compose
+Create a (or add to your existing) `docker-compose.yml` file in a folder of your choosing:
+```yaml
+services:
+  periodt:
+    container_name: periodt
+    image: ghcr.io/andreuinyu/periodt:latest # or, andreuinyu/periodt:latest
+    restart: unless-stopped
+    ports:
+      - "3111:8000"
+    volumes:
+      - ./periodt_data:/data
+    environment:
+      - TZ=UTC
+      - NOTIFY_DAYS_BEFORE=3
+      - NOTIFY_HOUR=9
+```
+and bring it up with
+```bash
+docker compose up -d
+```
+### Configuration
+
+Edit `docker-compose.yml` to change the port:
+
+```yaml
+  ports:
+    - "3111:8000"   # expose on port 3111
+```
+or modify the environment variables (if not provided at all, the values will default to these values shown here):
+```yaml
+  environment:
+    - TZ=UTC
+    - NOTIFY_DAYS_BEFORE=3
+    - NOTIFY_HOUR=9
+```
+  * `TZ` should be something like America/New_York or Europe/Dublin. Find out which one suits you best [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List).
+  * `NOTIFY_DAYS_BEFORE` configures how many days before the period is supposed to arrive (based off of the historic average) should notifications be sent out to subscribed users.
+  * `NOTIFY_HOUR` configures at what time will the server check if notifications are to be sent out.
+
+### Data Persistence
+If instead of useing a real path of your choosing `/path/to/your/periodt_data:/data` to map the database file out of Docker, you are using a docker volume in the [docker-compose.yml](docker-compose.yml) (like `periodt_data:/data`), you can still back it up with:
+
+```bash
+docker run --rm -v periodt_data:/data -v $(pwd):/backup alpine \
+  cp /data/tracker.db /backup/tracker_backup.db
+```
+
+## Installing on mobile
+* **Android (Chrome):** tap the install banner or browser menu → "Add to Home Screen"  
+* **iOS (Safari):** Share → "Add to Home Screen"
+
+⚠️IMPORTANT⚠️: this will only work if you access your Periodt service via HTTPS.
+
+---
+
+# Development
+Any help is welcome, but especially:
+* Translations: please, copy one of the existing .json in [frontend/static/translations](frontend/static/translations) and translate all its entries to a missing language. Then, also add the necessary option in [index.html](frontend/index.html) (where `value` is the name of each .json).
+    ```html
+    <select id="lang-select" class="settings-select">
+      <option value="en">English</option>
+      <option value="cat">Català</option>
+      <option value="es">Español</option>
+      ...
+    </select>
+    ``` 
+* Design: Icons, styles, hell, even the name of this thing. 
+* Annoyingly obvious features a simple period tracker should have that this one doesn't.
+
+### Stack
 
 | Layer | Tech |
 |-------|------|
@@ -11,10 +89,7 @@ A privacy-first, self-hosted, dead simple period tracking Progressive Web App. D
 | Frontend | Vanilla JS PWA |
 | Container | Docker + Docker Compose |
 
----
-
-## 🚀 Quick Start
-TBD - this is devmode. eventually published to registry and an example docker compose will be provided.
+Set yourself up with:
 
 ```bash
 # 1. Clone / download this folder
@@ -27,22 +102,7 @@ docker compose up --build
 open http://localhost:3111
 ```
 
----
-
-## PWA Features
-
-- **Offline support** — service worker caches the app shell; API calls fall back gracefully when offline
-- **Home screen install** — an install banner appears automatically in supported browsers (Chrome, Edge, Safari on iOS via "Add to Home Screen")
-- **Push notifications** — tap the 🔔 button to opt in; the backend stores subscriptions in SQLite
-
-### Installing on mobile
-
-**Android (Chrome):** tap the install banner or browser menu → "Add to Home Screen"  
-**iOS (Safari):** Share → "Add to Home Screen"
-
----
-
-## API Endpoints
+### API Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -54,46 +114,11 @@ open http://localhost:3111
 | POST | `/api/symptoms` | Log symptoms |
 | DELETE | `/api/symptoms/{id}` | Delete a symptom log |
 | GET | `/api/predictions` | Get next period prediction |
+| GET | `/api/push/vapid-public-key` | Get key for push notifications |
 | POST | `/api/push/subscribe` | Register push subscription |
+| POST | `/api/push/unsubscribe` | Delete push subscription |
 
 Interactive API docs: http://localhost:3111/docs
-
----
-
-## Data Persistence
-
-SQLite database is stored in a named Docker volume (`periodt_data`). To back up:
-
-```bash
-docker run --rm -v periodt_data:/data -v $(pwd):/backup alpine \
-  cp /data/tracker.db /backup/tracker_backup.db
-```
-
-Or, instead of using a docker volume in the [docker-compose.yml](docker-compose.yml) `periodt_data:/data`, use a real path of your choosing `/path/to/your/periodt_data:/data`
-
----
-
-## Configuration
-
-Edit `docker-compose.yml` to change the port:
-
-```yaml
-  ports:
-    - "3111:8000"   # expose on port 3111
-```
-
-## Development (without Docker)
-
-```bash
-cd backend
-pip install -r requirements.txt
-
-# Copy frontend into place (backend serves it)
-cp -r ../frontend /tmp/periodt_frontend
-
-# Run
-DATA_DIR=/tmp uvicorn main:app --reload
-```
 
 ---
 
@@ -106,15 +131,16 @@ period-tracker/
 ├── README.md
 ├── backend/
 │   ├── main.py          # FastAPI app
+│   ├── notifications.py # Notification handling
 │   └── requirements.txt
 └── frontend/
     ├── index.html       # PWA shell
+    ├── sw.js        # Service worker
     └── static/
         ├── manifest.json
         ├── scripts.js
         ├── styles.css
         ├── translations/LANGUAGE.json
-        ├── sw.js        # Service worker
         └── icons/
             ├── icon-192.png
             └── icon-512.png

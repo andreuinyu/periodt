@@ -6,17 +6,22 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from contextlib import asynccontextmanager
 from datetime import date, timedelta
 from fastapi_cache import FastAPICache
+from fastapi_cache.decorator import cache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 import sqlite3
 import base64
 import json
 import logging
+import os
 
 logger = logging.getLogger("uvicorn.error")
 
 VAPID_CLAIMS = {"sub": "mailto:app@localhost"}
 DB_PATH = "/data/tracker.db"
-RANGE_MAX = 3  # Max days in advance to send notifications
+NOTIFY_DAYS_BEFORE = int(os.getenv("NOTIFY_DAYS_BEFORE", 3))  # Max days in advance to send notifications
+logger.info(f"Notification range set to {NOTIFY_DAYS_BEFORE} days before predicted period")
+NOTIFY_HOUR = int(os.getenv("NOTIFY_HOUR", 9))  # Hour of day to run the notification job
+logger.info(f"Notification job scheduled to run at {NOTIFY_HOUR}:00 daily")
 scheduler = BackgroundScheduler()
 
 
@@ -119,8 +124,8 @@ def check_and_notify():
 
         days_away = (next_period - date.today()).days
         logger.info(f"Next period predicted for {next_period} (in {days_away} days), sending notifications to subscribers")
-        if days_away not in range(1, RANGE_MAX):
-            logger.info(f"Next period is not within 1-{RANGE_MAX-1} days, skipping notifications")
+        if days_away not in range(1, NOTIFY_DAYS_BEFORE):
+            logger.info(f"Next period is not within 1-{NOTIFY_DAYS_BEFORE-1} days, skipping notifications")
             return
 
         keys_row = db.execute("SELECT value FROM config WHERE key='vapid_keys'").fetchone()
@@ -157,7 +162,16 @@ async def lifespan(app):
     app.state.vapid_private = private_key
     app.state.vapid_public = public_key
 
-    scheduler.add_job(check_and_notify, "cron", hour=9, minute=0, id="period_reminder")
+    scheduler.add_job(check_and_notify, "cron", hour=NOTIFY_HOUR, minute=0, id="period_reminder")
+    scheduler.add_job(
+        check_and_notify,
+        "cron",
+        hour=NOTIFY_HOUR,
+        minute=0,
+        id="period_reminder",
+        replace_existing=True,
+        timezone=os.environ.get("TZ", "UTC")
+    )
     scheduler.start()
     logger.info("Scheduler started")
 
@@ -175,6 +189,7 @@ router = APIRouter(prefix="/api/push", tags=["push"])
 
 
 @router.get("/vapid-public-key")
+@cache(expire=60)
 def get_vapid_public_key(request: Request):
     return {"public_key": request.app.state.vapid_public}
 

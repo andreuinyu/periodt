@@ -4,6 +4,8 @@ LABEL org.opencontainers.image.source="https://github.com/andreuinyu/periodt"
 LABEL org.opencontainers.image.description="Periodt"
 # TODO: LABEL org.opencontainers.image.license=""
 
+RUN apk add --no-cache tzdata
+
 WORKDIR /app
 
 # Install Python deps
@@ -19,6 +21,8 @@ COPY frontend /app/frontend
 
 # Data directory
 RUN mkdir -p /data
+ENV PYTHONUNBUFFERED=1
+ENV TZ=UTC
 
 EXPOSE 8000
 
