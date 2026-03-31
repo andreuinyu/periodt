@@ -14,7 +14,10 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 import os
 
-app = FastAPI(title="Period Tracker API")
+from notifications import lifespan, router as push_router
+
+app = FastAPI(title="Period Tracker API", lifespan=lifespan)
+app.include_router(push_router)
 
 @app.on_event("startup")
 async def startup():
@@ -73,6 +76,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS push_subscriptions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             subscription TEXT NOT NULL UNIQUE,
+            strings TEXT,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
     """)
@@ -128,9 +132,6 @@ class SymptomLog(BaseModel):
         if v is not None and v < 0:
             raise ValueError("Mood index must be a non-negative integer")
         return v
-
-class PushSubscription(BaseModel):
-    subscription: dict
 
 # ── Cycles ───────────────────────────────────────────────────────────────────
 
@@ -231,23 +232,16 @@ def get_predictions(db: sqlite3.Connection = Depends(get_db)):
         "last_period": starts[0].isoformat()
     }
 
-# ── Push Notifications ────────────────────────────────────────────────────────
-
-@app.post("/api/push/subscribe", status_code=201)
-def subscribe_push(sub: PushSubscription, db: sqlite3.Connection = Depends(get_db)):
-    sub_json = json.dumps(sub.subscription)
-    try:
-        db.execute("INSERT OR REPLACE INTO push_subscriptions (subscription) VALUES (?)", (sub_json,))
-        db.commit()
-    except Exception:
-        pass
-    return {"status": "subscribed"}
 
 # ── Serve frontend ────────────────────────────────────────────────────────────
 
 frontend_path = Path("/app/frontend")
 if frontend_path.exists():
     app.mount("/static", StaticFiles(directory=str(frontend_path / "static")), name="static")
+
+    @app.get("/sw.js", include_in_schema=False)
+    def serve_sw():
+        return FileResponse(str(frontend_path / "sw.js"))
 
     @app.get("/", include_in_schema=False)
     @app.get("/{path:path}", include_in_schema=False)

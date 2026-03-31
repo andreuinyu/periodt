@@ -663,7 +663,7 @@ function buildMoodRow() {
 // ── Service Worker & PWA ───────────────────────────────────────────────────
 function setupServiceWorker() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/static/sw.js')
+        navigator.serviceWorker.register('/sw.js')
             .then(reg => console.log('SW registered', reg.scope))
             .catch(e => console.warn('SW error', e));
     }
@@ -696,20 +696,57 @@ function setupPWA() {
 
 }
 
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = atob(base64);
+    return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
 async function subscribePush() {
-    if (!('PushManager' in window)) return;
+    if (!('PushManager' in window)) return console.warn('PushManager not available');
     try {
+        const { public_key } = await fetch(`${API}/api/push/vapid-public-key`).then(r => r.json());
         const reg = await navigator.serviceWorker.ready;
         const sub = await reg.pushManager.subscribe({
             userVisibleOnly: true,
-            applicationServerKey: null
+            applicationServerKey: urlBase64ToUint8Array(public_key)
         });
         await fetch(`${API}/api/push/subscribe`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                subscription: sub.toJSON(),
+                strings: {
+                    title: t('push_title'),
+                    body_singular: t('push_body_singular'),
+                    body_plural: t('push_body_plural')
+                }
+            })
+        });
+    } catch (e) { console.error('Push subscribe error', e); }
+}
+
+async function unsubscribePush() {
+    try {
+        const reg = navigator.serviceWorker.controller
+            ? await navigator.serviceWorker.ready
+            : await navigator.serviceWorker.getRegistration();
+
+        if (!reg) return;
+
+        const sub = await reg.pushManager.getSubscription();
+        if (!sub) return;
+
+        // Tell the server first, then unsubscribe locally
+        await fetch(`${API}/api/push/unsubscribe`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ subscription: sub.toJSON() })
         });
-    } catch (e) { console.warn('Push subscribe error', e); }
+
+        await sub.unsubscribe();
+    } catch (e) { console.warn('Push unsubscribe error', e); }
 }
 
 function monitorOffline() {
@@ -727,6 +764,7 @@ function applyFormVisibility() {
     const flowCard = document.querySelector('.form-section:has(.flow-row)');
     const logTodayCard = document.querySelector('.card:has(#save-log-btn)');
     if (flowCard) flowCard.style.display = showFlow ? '' : 'none';
+    selectedFlow = 0;
     if (logTodayCard) logTodayCard.style.display = showLogToday ? '' : 'none';
 }
 
@@ -739,9 +777,10 @@ function setupSettings() {
         langSelect.value = localStorage.getItem('lang') || 'en';
         document.getElementById('setting-flow').checked = localStorage.getItem('setting-flow') !== 'false';
         document.getElementById('setting-logtoday').checked = localStorage.getItem('setting-logtoday') !== 'false';
-        // Reflect current notification permission
-        const notifPerm = 'Notification' in window ? Notification.permission : 'denied';
-        document.getElementById('setting-notif').checked = notifPerm === 'granted';
+        // Use saved pref, but cap it at actual browser permission
+        const savedNotif = localStorage.getItem('setting-notif') !== 'false';
+        const browserGranted = 'Notification' in window && Notification.permission === 'granted';
+        document.getElementById('setting-notif').checked = savedNotif && browserGranted;
     };
 
     // Open
@@ -766,23 +805,30 @@ function setupSettings() {
     });
 
     // Save button
-    document.getElementById('settings-save').addEventListener('click', async () => {
-        // Notifications
-        const wantsNotif = document.getElementById('setting-notif').checked;
-        if (wantsNotif && 'Notification' in window && Notification.permission !== 'granted') {
-            const perm = await Notification.requestPermission();
-            if (perm === 'granted') await subscribePush();
-            else document.getElementById('setting-notif').checked = false;
+    document.getElementById('settings-save').addEventListener('click', () => {
+    const wantsNotif = document.getElementById('setting-notif').checked;
+
+    // Fire and forget — don't await push operations
+    if (wantsNotif) {
+        if ('Notification' in window && Notification.permission !== 'granted') {
+            Notification.requestPermission().then(perm => {
+                if (perm === 'granted') subscribePush();
+                else document.getElementById('setting-notif').checked = false;
+            });
+        } else if (Notification.permission === 'granted') {
+            subscribePush();
         }
+    } else {
+        unsubscribePush(); // no await
+    }
 
-        // Persist form visibility prefs
-        localStorage.setItem('setting-flow', document.getElementById('setting-flow').checked);
-        localStorage.setItem('setting-logtoday', document.getElementById('setting-logtoday').checked);
-
-        applyFormVisibility();
-        overlay.classList.remove('open');
-        toast(t('settings_saved'));
-    });
+    localStorage.setItem('setting-notif', wantsNotif);
+    localStorage.setItem('setting-flow', document.getElementById('setting-flow').checked);
+    localStorage.setItem('setting-logtoday', document.getElementById('setting-logtoday').checked);
+    applyFormVisibility();
+    overlay.classList.remove('open');
+    toast(t('settings_saved'));
+});
 
     // Apply on load
     applyFormVisibility();
