@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.git
+.gitignore
+.gitattributes
+.env
+*.log
+periodt_data/
+README.md
+renovate.json

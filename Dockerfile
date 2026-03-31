@@ -1,4 +1,8 @@
-FROM python:3.14-slim
+FROM python:3.14-alpine
+
+LABEL org.opencontainers.image.source="https://github.com/andreuinyu/periodt"
+LABEL org.opencontainers.image.description="Periodt"
+# TODO: LABEL org.opencontainers.image.license=""
 
 WORKDIR /app
 
