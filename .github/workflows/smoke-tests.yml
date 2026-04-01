@@ -1,0 +1,58 @@
+name: Smoke Test
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+ 
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+ 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+ 
+      - name: Build image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true
+          tags: periodt:test
+          build-args: |
+            BASE_IMAGE=python:3.14-alpine
+ 
+      - name: Start container
+        run: docker run -d --name periodt-test -p 8000:8000 periodt:test
+ 
+      - name: Wait for startup and check logs
+        run: |
+          for i in $(seq 1 15); do
+            docker logs periodt-test 2>&1 | grep -q "Application startup complete" && break
+            echo "Waiting for startup... ($i)"
+            sleep 2
+          done
+          docker logs periodt-test 2>&1 | grep "Application startup complete" || {
+            echo "App failed to start. Full logs:"
+            docker logs periodt-test
+            exit 1
+          }
+ 
+      - name: HTTP check
+        run: |
+          for i in $(seq 1 15); do
+            curl -sf http://localhost:8000/ && break
+            echo "Waiting for HTTP... ($i)"
+            sleep 2
+          done || {
+            echo "HTTP check failed. Full logs:"
+            docker logs periodt-test
+            exit 1
+          }
+ 
+      - name: Teardown
+        if: always()
+        run: docker stop periodt-test && docker rm periodt-test
