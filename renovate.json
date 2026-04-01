@@ -9,6 +9,9 @@
       "^backend/Dockerfile$"
     ]
   },
+  "github-actions": {
+    "fileMatch": ["^\\.github/workflows/[^/]+\\.yml$"]
+  },
   "rangeStrategy": "bump",
   "semanticCommits": "enabled",
   "labels": ["renovate"]
