@@ -1,4 +1,5 @@
 # 🌙 Periodt — Period Tracker PWA
+[![Smoke Test](https://github.com/andreuinyu/periodt/actions/workflows/smoke-tests.yml/badge.svg)](https://github.com/andreuinyu/periodt/actions/workflows/smoke-tests.yml)
 
 A privacy-first, self-hosted, dead simple period tracking Progressive Web App. Data stays in your server of choice and you can use it on the web or on your phone as an app.
 
