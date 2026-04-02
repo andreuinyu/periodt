@@ -60,7 +60,7 @@ Edit `docker-compose.yml` to change the port:
   ports:
     - "2333:8000"   # expose on port 2333
 ```
-or modify the environment variables (if not provided at all, the values will default to these values shown here):
+or modify the environment variables to the values that suit you the best (if not provided at all, the values will default to these values shown above):
 ```yaml
   environment:
     - TZ=Europe/Dublin
