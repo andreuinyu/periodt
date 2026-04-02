@@ -74,18 +74,3 @@ jobs:
             ${{ env.DOCKER_HUB_USERNAME }}/periodt:${{ github.event.release.tag_name }}
           build-args: |
             BASE_IMAGE=python:3.14-alpine
-
-  dockerhub-sync-readme:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v6
-
-      - name: Sync Dockerhub README
-        uses: peter-evans/dockerhub-description@v5
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-          repository: ${{ secrets.DOCKER_HUB_USERNAME }}/periodt
-          short-description: ${{ github.event.repository.description }}
