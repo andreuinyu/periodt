@@ -64,8 +64,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/periodt:latest
-            ghcr.io/${{ github.repository }}/periodt:${{ github.event.release.tag_name }}
+            ghcr.io/${{ env.GHCR_USERNAME }}/periodt:latest
+            ghcr.io/${{ env.GHCR_USERNAME }}/periodt:${{ github.event.release.tag_name }}
             ${{ env.DOCKER_HUB_USERNAME }}/periodt:latest
             ${{ env.DOCKER_HUB_USERNAME }}/periodt:${{ github.event.release.tag_name }}
           build-args: |
