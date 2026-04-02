@@ -1,8 +1,9 @@
 FROM python:3.14-alpine
 
 LABEL org.opencontainers.image.source="https://github.com/andreuinyu/periodt"
-LABEL org.opencontainers.image.description="Periodt"
-# TODO: LABEL org.opencontainers.image.license=""
+LABEL org.opencontainers.image.title="Periodt"
+LABEL org.opencontainers.image.description="Self-hosted period tracking."
+LABEL org.opencontainers.image.license="CC-BY-NC-4.0"
 
 RUN apk update && apk upgrade --no-cache
 RUN apk add --no-cache tzdata
