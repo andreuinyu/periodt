@@ -20,5 +20,5 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
         repository: ${{ secrets.DOCKER_HUB_USERNAME }}/periodt
-        short-description: ${{ github.event.repository.description }}
+        short-description: "${{ github.event.repository.description }} | github.com/andreuinyu/periodt"
         enable-url-completion: true
