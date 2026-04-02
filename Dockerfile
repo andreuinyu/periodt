@@ -4,6 +4,7 @@ LABEL org.opencontainers.image.source="https://github.com/andreuinyu/periodt"
 LABEL org.opencontainers.image.description="Periodt"
 # TODO: LABEL org.opencontainers.image.license=""
 
+RUN apk update && apk upgrade --no-cache
 RUN apk add --no-cache tzdata
 
 WORKDIR /app
