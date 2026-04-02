@@ -1,19 +1,33 @@
-# 🌙 Periodt — Period Tracker PWA
+<h1><img src="frontend/static/icons/icon-512.png" width="50" align="absmiddle" /> Periodt — Period Tracker</h1>
+
 [![Smoke Test](https://github.com/andreuinyu/periodt/actions/workflows/smoke-tests.yml/badge.svg)](https://github.com/andreuinyu/periodt/actions/workflows/smoke-tests.yml)
 [![CodeQL & Eslint](https://github.com/andreuinyu/periodt/actions/workflows/lint.yml/badge.svg)](https://github.com/andreuinyu/periodt/actions/workflows/lint.yml)
-[![Trivy VulnScan $ Image Publish](https://github.com/andreuinyu/periodt/actions/workflows/docker-build.yml/badge.svg)](https://github.com/andreuinyu/periodt/actions/workflows/docker-build.yml)
+[![Trivy VulnScan & Image Publish](https://github.com/andreuinyu/periodt/actions/workflows/docker-build.yml/badge.svg)](https://github.com/andreuinyu/periodt/actions/workflows/docker-build.yml)
 
 A privacy-first, self-hosted, dead simple period tracking Progressive Web App. Data stays in your server of choice and you can use it on the web or on your phone as an app.
 
+<details>
+<summary>View screenshots</summary>
+
+![Screen 1](/docs/imgs/Screenshot_1.png)
+![Screen 2](/docs/imgs/Screenshot_2.png)
+![Screen 3](/docs/imgs/Screenshot_3.png)
+![Screen 4](/docs/imgs/Screenshot_4.png)
+
+</details>
+
 ### PWA Features
 
+Periodt is built as a [Progressive Web App](https://en.wikipedia.org/wiki/Progressive_web_app), which is basically a website that can be "installed" on a device as a standalone application. This allows the users to have a nice mobile experience, without having to develop Android and iOS standalone applications and the hassle of publishing them on app stores.
 - **Offline support** — service worker caches the app shell; API calls fall back gracefully when offline
 - **Home screen install** — an install banner appears automatically in supported browsers (Chrome, Edge, Safari on iOS via "Add to Home Screen")
-- **Push notifications** — Opt in in the Settings page; the backend stores subscriptions in SQLite (⚠️IMPORTANT⚠️: this will only work if you access your Periodt service via HTTPS.)
+- **Push notifications** — Opt in in the Settings page; the backend stores subscriptions in SQLite 
+
+⚠️IMPORTANT⚠️: this will only work if you access your Periodt service via HTTPS.
 
 ---
 
-## Setup with Docker Compose
+## 🐋 Setup with Docker Compose
 Create a (or add to your existing) `docker-compose.yml` file in a folder of your choosing:
 ```yaml
 services:
@@ -40,14 +54,14 @@ Edit `docker-compose.yml` to change the port:
 
 ```yaml
   ports:
-    - "3111:8000"   # expose on port 3111
+    - "2333:8000"   # expose on port 2333
 ```
 or modify the environment variables (if not provided at all, the values will default to these values shown here):
 ```yaml
   environment:
-    - TZ=UTC
-    - NOTIFY_DAYS_BEFORE=3
-    - NOTIFY_HOUR=9
+    - TZ=Europe/Dublin
+    - NOTIFY_DAYS_BEFORE=5
+    - NOTIFY_HOUR=7
 ```
   * `TZ` should be something like America/New_York or Europe/Dublin. Find out which one suits you best [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List).
   * `NOTIFY_DAYS_BEFORE` configures how many days before the period is supposed to arrive (based off of the historic average) should notifications be sent out to subscribed users.
@@ -66,6 +80,14 @@ docker run --rm -v periodt_data:/data -v $(pwd):/backup alpine \
 * **iOS (Safari):** Share → "Add to Home Screen"
 
 ⚠️IMPORTANT⚠️: this will only work if you access your Periodt service via HTTPS.
+
+## HTTPS
+
+There are many ways to route your self-hosted services through HTTPS. Amongst them:
+
+* **Reverse proxy:** [Nginx](https://hub.docker.com/_/nginx/), [Caddy](https://github.com/caddyserver/caddy), [Traefik](https://github.com/traefik/traefik), ...
+* **Tunnel (mostly free) services:** [Cloudflare Tunnel](https://developers.cloudflare.com/tunnel/), [ngrok](https://ngrok.com/), [Tailscale](https://tailscale.com/docs/how-to/set-up-https-certificates), ...
+* **Self-Managed TLS certificates**
 
 ---
 
@@ -130,7 +152,7 @@ Interactive API docs: http://localhost:3111/docs
 ```
 period-tracker/
 ├── Dockerfile
-├── docker-compose.yml
+├── docker-compose.yml # for local developing
 ├── README.md
 ├── backend/
 │   ├── main.py          # FastAPI app
