@@ -38,7 +38,7 @@ jobs:
           password: ${{ env.GHCR_TOKEN }}
       
       - name: Build image locally for scanning
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
@@ -57,7 +57,7 @@ jobs:
           ignore-unfixed: true
  
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
