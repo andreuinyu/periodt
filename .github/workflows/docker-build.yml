@@ -84,13 +84,8 @@ jobs:
 
       - name: Sync Dockerhub README
         uses: peter-evans/dockerhub-description@v5
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_HUB_TOKEN }}
-          DOCKER_REPOSITORY: ${{ secrets.DOCKER_HUB_USERNAME }}/periodt
-          GIT_BRANCH: main
         with:
-          username: ${{ env.DOCKERHUB_USERNAME }}
-          password: ${{ env.DOCKERHUB_PASSWORD }}
-          repository: ${{ env.DOCKER_REPOSITORY }}
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          repository: ${{ secrets.DOCKER_HUB_USERNAME }}/periodt
           short-description: ${{ github.event.repository.description }}
