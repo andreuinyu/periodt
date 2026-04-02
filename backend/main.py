@@ -10,9 +10,8 @@ from typing import Optional, List
 import logging
 import sqlite3
 import json
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from pathlib import Path
-import os
 
 from notifications import lifespan, router as push_router
 
@@ -156,7 +155,6 @@ def update_cycle(cycle_id: int, update: CycleUpdate, db: sqlite3.Connection = De
     cycle = db.execute("SELECT * FROM cycles WHERE id=?", (cycle_id,)).fetchone()
     if not cycle:
         raise HTTPException(404, "Cycle not found")
-    fields = {k: v for k, v in update.dict().items() if v is not None}  # 0 is falsy — fix:
     fields = {k: v for k, v in update.dict(exclude_unset=True).items()}
     if fields:
         sets = ", ".join(f"{k}=?" for k in fields)

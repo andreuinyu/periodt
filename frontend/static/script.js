@@ -9,7 +9,7 @@ async function loadTranslations(lang) {
         const res = await fetch(`/static/translations/${lang}.json`);
         translations = await res.json();
     } catch (e) {
-        console.warn('Translation load failed, fallback to EN');
+        console.warn('Translation load failed, fallback to EN. Error:', e);
         if (lang !== 'en') {
             return loadTranslations('en');
         }
@@ -166,7 +166,6 @@ function setupNav() {
 // ── Home ───────────────────────────────────────────────────────────────────
 function renderHome() {
     const activeCycle = cycles.find(c => !c.end_date);
-    const lastCycle = cycles.find(c => c.start_date);
 
     let dayNum = '—', phase = t('unknown'), phaseLabel = t('no_data');
 
@@ -176,7 +175,6 @@ function renderHome() {
         dayNum = Math.floor((today - start) / 86400000) + 1;
         phase = 'menstrual'; phaseLabel = t('menstrual');
     } else if (predictions.next_period && predictions.cycle_length) {
-        const next = new Date(predictions.next_period);
         const last = new Date(predictions.last_period);
         const today = new Date(); today.setHours(0, 0, 0, 0);
         const dayOfCycle = Math.floor((today - last) / 86400000) + 1;
@@ -471,12 +469,14 @@ function renderHistory() {
     }).join('');
 }
 
+// eslint-disable-next-line no-unused-vars
 async function deleteCycle(id) {
     await fetch(`${API}/api/cycles/${id}`, { method: 'DELETE' });
     await loadAll();
     toast(t('cycle_removed'));
 }
 
+// eslint-disable-next-line no-unused-vars
 async function deleteSymptom(id) {
     await fetch(`${API}/api/symptoms/${id}`, { method: 'DELETE' });
     await loadAll();
@@ -630,7 +630,7 @@ function setupForms() {
 }
 
 function buildSymptomGrid() {
-    const SYMPTOMS = t('symptoms_list');
+    SYMPTOMS = t('symptoms_list');
     const grid = document.getElementById('symptom-grid');
     grid.innerHTML = SYMPTOMS.map((s, i) =>
         `<button class="symptom-chip" data-index="${i}">${s}</button>`
@@ -646,7 +646,7 @@ function buildSymptomGrid() {
 }
 
 function buildMoodRow() {
-    const MOODS = t('moods');
+    MOODS = t('moods');
     const row = document.getElementById('mood-row');
     row.innerHTML = MOODS.map((m, i) =>
         `<button class="mood-btn" data-index="${i}"><span>${m.e}</span><span>${m.l}</span></button>`
