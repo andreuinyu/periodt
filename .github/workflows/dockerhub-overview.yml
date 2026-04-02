@@ -5,7 +5,7 @@ on:
       - main
     paths:
       - README.md
-      - .github/workflows/dockerhub-description.yml
+      - .github/workflows/dockerhub-overview.yml
   workflow_dispatch: 
  
 jobs:
