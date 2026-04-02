@@ -1,4 +1,4 @@
-name: Build, VulnScan and Publish Docker Image
+name: Build, VulnScan & Publish Docker Image
 
 on:
   release:

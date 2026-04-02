@@ -1,4 +1,4 @@
-name: Static JS & Python Lint with CodeQL & Eslint
+name: JS & Python Lint w/ CodeQL & Eslint
 on:
   schedule:
     - cron: '0 7 * * 5' # Friday 7am UTC
