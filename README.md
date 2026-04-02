@@ -8,11 +8,12 @@ A privacy-first, self-hosted, dead simple period tracking Progressive Web App. D
 
 <details>
 <summary>View screenshots</summary>
-
-![Screen 1](./docs/imgs/Screenshot_1.png)
-![Screen 2](./docs/imgs/Screenshot_2.png)
-![Screen 3](./docs/imgs/Screenshot_3.png)
-![Screen 4](./docs/imgs/Screenshot_4.png)
+<p>
+  <img src="./docs/imgs/Screenshot_1.jpg" width="45%"/>
+  <img src="./docs/imgs/Screenshot_2.jpg" width="45%"/>
+  <img src="./docs/imgs/Screenshot_3.jpg" width="45%"/>
+  <img src="./docs/imgs/Screenshot_4.jpg" width="45%"/>
+</p>
 
 </details>
 
