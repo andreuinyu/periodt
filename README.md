@@ -4,7 +4,6 @@
 [![CodeQL & Eslint](https://github.com/andreuinyu/periodt/actions/workflows/lint.yml/badge.svg)](https://github.com/andreuinyu/periodt/actions/workflows/lint.yml)
 [![Trivy VulnScan & Image Publish](https://github.com/andreuinyu/periodt/actions/workflows/docker-build.yml/badge.svg)](https://github.com/andreuinyu/periodt/actions/workflows/docker-build.yml)
 [![Docker Pulls](https://badgen.net/docker/pulls/andreuinyu/periodt?icon=docker&label=pulls)](https://hub.docker.com/r/andreuinyu/periodt/)
-[![Docker Stars](https://badgen.net/docker/stars/andreuinyu/periodt?icon=docker&label=stars)](https://hub.docker.com/r/andreuinyu/periodt/)
 [![Docker Image Size](https://badgen.net/docker/size/andreuinyu/periodt?icon=docker&label=image%20size)](https://hub.docker.com/r/andreuinyu/periodt/)
 
 
