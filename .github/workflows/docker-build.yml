@@ -79,14 +79,18 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: Sync README
-        uses: docker://lsiodev/readme-sync:latest
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Sync Dockerhub README
+        uses: peter-evans/dockerhub-description@v5
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_HUB_TOKEN }}
-          GIT_REPOSITORY: ${{ github.repository }}
           DOCKER_REPOSITORY: ${{ secrets.DOCKER_HUB_USERNAME }}/periodt
           GIT_BRANCH: main
         with:
-          entrypoint: node
-          args: /opt/docker-readme-sync/sync
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ env.DOCKERHUB_PASSWORD }}
+          repository: ${{ env.DOCKER_REPOSITORY }}
+          short-description: ${{ github.event.repository.description }}

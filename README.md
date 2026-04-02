@@ -27,7 +27,7 @@ Periodt is built as a [Progressive Web App](https://en.wikipedia.org/wiki/Progre
 - **Home screen install** — an install banner appears automatically in supported browsers (Chrome, Edge, Safari on iOS via "Add to Home Screen")
 - **Push notifications** — Opt in in the Settings page; the backend stores subscriptions in SQLite 
 
-⚠️IMPORTANT⚠️: this will only work if you access your Periodt service via HTTPS.
+⚠️IMPORTANT⚠️: this will only work if you access your Periodt service via [HTTPS](#https).
 
 ---
 
@@ -83,7 +83,7 @@ docker run --rm -v periodt_data:/data -v $(pwd):/backup alpine \
 * **Android (Chrome):** tap the install banner or browser menu → "Add to Home Screen"  
 * **iOS (Safari):** Share → "Add to Home Screen"
 
-⚠️IMPORTANT⚠️: this will only work if you access your Periodt service via HTTPS.
+⚠️IMPORTANT⚠️: this will only work if you access your Periodt service via [HTTPS](#https).
 
 ## HTTPS
 
