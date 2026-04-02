@@ -82,10 +82,10 @@ jobs:
       - name: Sync README
         uses: docker://lsiodev/readme-sync:latest
         env:
-          DOCKERHUB_USERNAME: ${{ env.DOCKER_HUB_USERNAME }}
-          DOCKERHUB_PASSWORD: ${{ env.DOCKER_HUB_TOKEN }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_HUB_TOKEN }}
           GIT_REPOSITORY: ${{ github.repository }}
-          DOCKER_REPOSITORY: ${{ env.DOCKER_HUB_USERNAME }}/periodt
+          DOCKER_REPOSITORY: ${{ secrets.DOCKER_HUB_USERNAME }}/periodt
           GIT_BRANCH: main
         with:
           entrypoint: node
