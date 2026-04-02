@@ -7,7 +7,7 @@ export default [
       "no-console": "off",
     },
     languageOptions: {
-      ecmaVersion: latest,
+      ecmaVersion: 2022,
       globals: {
         // browser
         window: "readonly",
