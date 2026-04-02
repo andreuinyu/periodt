@@ -9,5 +9,8 @@ __pycache__/
 .env
 *.log
 periodt_data/
+docs/
 README.md
+LICENSE
 renovate.json
+eslint.config.js

@@ -1,3 +1,6 @@
 .git*           export-ignore
 LICENSE         export-ignore
 renovate.json   export-ignore
+README.md       export-ignore
+docs/           export-ignore
+eslint.config.js    export-ignore
