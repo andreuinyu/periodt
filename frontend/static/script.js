@@ -17,7 +17,8 @@ async function loadTranslations(lang) {
 }
 
 function t(key) {
-    return translations[key] || key;
+    const val = translations[key];
+    return val !== undefined ? val : key;
 }
 
 function tVars(key, vars = {}) {
@@ -244,7 +245,7 @@ function renderCalendar() {
     const dowEl = document.getElementById('cal-dow');
     dowEl.innerHTML = DOWS_LOCALE.map(d => `<div class="cal-dow">${d}</div>`).join('');
 
-    let firstDay = new Date(calYear, calMonth, 1).getDay();
+    let firstDay = new Date(Number(calYear), Number(calMonth), 1).getDay();
     firstDay = (firstDay - weekStart + 7) % 7;
     const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
     const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -253,21 +254,21 @@ function renderCalendar() {
     const periodDays = new Set(), periodStarts = new Set(), fertileDays = new Set(), predictedDays = new Set(), symptomDays = new Set();
 
     cycles.forEach(c => {
-        const start = new Date(c.start_date /*+ 'T00:00:00' */);
-        const end = c.end_date ? new Date(c.end_date  /*+ 'T00:00:00' */) : new Date(start.getTime() + 5 * 86400000);
+        const start = new Date(c.start_date + 'T00:00:00');
+        const end = c.end_date ? new Date(c.end_date  + 'T00:00:00') : new Date(start.getTime() + 5 * 86400000);
         periodStarts.add(c.start_date);
         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1))
             periodDays.add(d.toISOString().slice(0, 10));
     });
 
     if (predictions.fertile_window) {
-        const fs = new Date(predictions.fertile_window.start  /*+ 'T00:00:00' */);
-        const fe = new Date(predictions.fertile_window.end  /*+ 'T00:00:00' */);
+        const fs = new Date(predictions.fertile_window.start  + 'T00:00:00');
+        const fe = new Date(predictions.fertile_window.end  + 'T00:00:00');
         for (let d = new Date(fs); d <= fe; d.setDate(d.getDate() + 1))
             fertileDays.add(d.toISOString().slice(0, 10));
     }
     if (predictions.next_period) {
-        const np = new Date(predictions.next_period  /*+ 'T00:00:00' */);
+        const np = new Date(predictions.next_period + 'T00:00:00');
         for (let i = 0; i < 6; i++) {
             const d = new Date(np); d.setDate(d.getDate() + i);
             predictedDays.add(d.toISOString().slice(0, 10));
@@ -286,7 +287,7 @@ function renderCalendar() {
         const el = document.createElement('button');
         el.className = 'cal-day';
         el.textContent = d;
-        const dt = new Date(iso  /*+ 'T00:00:00' */);
+        const dt = new Date(iso  + 'T00:00:00');
         if (dt.getTime() === today.getTime()) el.classList.add('today');
         if (periodStarts.has(iso)) el.classList.add('period-start');
         else if (periodDays.has(iso)) el.classList.add('period');
