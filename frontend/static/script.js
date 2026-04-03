@@ -60,8 +60,7 @@ function applyTranslations() {
 
 }
 
-
-// ── State ──────────────────────────────────────────────────────────────────
+// State
 let cycles = [], symptoms = [], predictions = {};
 let calYear, calMonth;
 let selectedFlow = 0;
@@ -70,40 +69,57 @@ let selectedMood = null;
 let selectedLang = localStorage.getItem('lang') || 'en';
 let SYMPTOMS = [], MOODS = [];
 
-
-
-// ── Init ───────────────────────────────────────────────────────────────────
+// Init 
 document.addEventListener('DOMContentLoaded', async () => {
     const langSelect = document.getElementById('lang-select');
-
     // Set saved language or default
     langSelect.value = selectedLang;
-
     // Load translations on page load
     await loadTranslations(langSelect.value);
-    applyTranslations();
-
-    // Handle language changes
-    langSelect.addEventListener('change', async () => {
-        localStorage.setItem('lang', langSelect.value);
-        await loadTranslations(langSelect.value);
-        applyTranslations();
-    });
 
     const today = new Date().toISOString().slice(0, 10);
     document.getElementById('quick-start-date').value = today;
     document.getElementById('log-date').value = today;
     document.getElementById('end-date').value = today;
-
-    loadAll();
+    
     setupNav();
     setupForms();
     setupServiceWorker();
     setupPWA();
     setupSettings();
     monitorOffline();
+
+    loadAll();
 });
 
+
+async function loadAll() {
+    //showLoadingIndicator(true); // TODO: start your spinner or "loading..." message
+
+    try {
+        const results = await Promise.allSettled([
+            fetchWithRetry(`${API}/api/cycles`).then(r => r.json()),
+            fetchWithRetry(`${API}/api/symptoms`).then(r => r.json()),
+            fetchWithRetry(`${API}/api/predictions`).then(r => r.json())
+        ]);
+        cycles = results[0].status === 'fulfilled' ? results[0].value : [];
+        symptoms = results[1].status === 'fulfilled' ? results[1].value : [];
+        predictions = results[2].status === 'fulfilled' ? results[2].value : [];
+
+        if (results.every(r => r.status === 'rejected')) {
+            console.warn('whoops, all data fetches failed', results.map(r => r.reason));
+        }
+    } catch (e) {
+        console.warn('Unexpected error', e);
+    }
+    calYear = new Date().getFullYear();
+    calMonth = new Date().getMonth();
+    applyTranslations();
+
+    //showLoadingIndicator(false); // TODO: hide spinner
+}
+
+// Fetch helpers
 async function fetchWithTimeout(url, options = {}, timeout = 5000) {
     return Promise.race([
         fetch(url, options),
@@ -122,37 +138,7 @@ async function fetchWithRetry(url, options, timeout, retries = 5) {
     }
 }
 
-async function loadAll() {
-    //showLoadingIndicator(true); // start your spinner or "loading..." message
-
-    try {
-        const results = await Promise.allSettled([
-            fetchWithRetry(`${API}/api/cycles`).then(r => r.json()),
-            fetchWithRetry(`${API}/api/symptoms`).then(r => r.json()),
-            fetchWithRetry(`${API}/api/predictions`).then(r => r.json())
-        ]);
-        cycles = results[0].status === 'fulfilled' ? results[0].value : [];
-        symptoms = results[1].status === 'fulfilled' ? results[1].value : [];
-        predictions = results[2].status === 'fulfilled' ? results[2].value : [];
-
-        if (results.every(r => r.status === 'rejected')) {
-            console.warn('whoops, all data fetches failed', results.map(r => r.reason));
-        }
-
-        renderHome();
-        calYear = new Date().getFullYear();
-        calMonth = new Date().getMonth();
-        renderCalendar();
-        renderHistory();
-        renderCycleHistogram();
-    } catch (e) {
-        console.warn('Unexpected error', e);
-    }
-    applyTranslations();
-    //showLoadingIndicator(false); // hide spinner
-}
-
-// ── Nav ────────────────────────────────────────────────────────────────────
+// Nav 
 function setupNav() {
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -164,7 +150,7 @@ function setupNav() {
     });
 }
 
-// ── Home ───────────────────────────────────────────────────────────────────
+// Home
 function renderHome() {
     const activeCycle = cycles.find(c => !c.end_date);
 
@@ -233,7 +219,7 @@ function fmtShort(iso) {
     return d.toLocaleDateString(localeMap[selectedLang], { month: 'short', day: 'numeric' });
 }
 
-// ── Calendar ───────────────────────────────────────────────────────────────
+// Calendar
 function renderCalendar() {
     const MONTHS = t('months');
     const DOWS = t('dows');
@@ -297,17 +283,15 @@ function renderCalendar() {
         el.addEventListener('click', (e) => showDayMenu(e, iso));
         grid.appendChild(el);
     }
+    document.getElementById('cal-prev').addEventListener('click', () => {
+        calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCalendar();
+    });
+    document.getElementById('cal-next').addEventListener('click', () => {
+        calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCalendar();
+    });
 }
 
-document.getElementById('cal-prev').addEventListener('click', () => {
-    calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCalendar();
-});
-document.getElementById('cal-next').addEventListener('click', () => {
-    calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCalendar();
-});
-
-
-// ── Day-tap popup menu ─────────────────────────────────────────────────────
+// Day-tap popup menu
 function showDayMenu(e, iso) {
     // Remove any existing menu
     const existing = document.getElementById('day-menu');
@@ -403,7 +387,7 @@ function navigateToForm(form, iso) {
     }
 }
 
-// ── History ────────────────────────────────────────────────────────────────
+// History
 function renderHistory() {
     const el = document.getElementById('cycle-list');
 
@@ -483,25 +467,11 @@ async function deleteSymptom(id) {
     toast(t('log_removed'));
 }
 
-function getCycleLengths() {
-    if (!cycles || cycles.length < 2) return [];
 
-    return cycles
-        .map(c => new Date(c.start_date))
-        .sort((a, b) => a - b) // oldest → newest
-        .map((date, i, arr) => {
-            if (i === 0) return null;
-            const prev = arr[i - 1];
-            const diff = (date - prev) / (1000 * 60 * 60 * 24);
-            return Math.round(diff);
-        })
-        .filter(Boolean);
-}
-
+// Histogram
 function renderCycleHistogram() {
     const container = document.getElementById('cycles-histogram');
     const durations = getCycleLengths();
-
 
     if (!durations.length) {
         container.innerHTML = `<p class="histogram-empty" data-i18n="no_cycles">${t('no_cycles')}</p>`;
@@ -550,7 +520,21 @@ function renderCycleHistogram() {
     });
 }
 
-// ── Forms ──────────────────────────────────────────────────────────────────
+function getCycleLengths() {
+    if (!cycles || cycles.length < 2) return [];
+
+    return cycles
+        .map(c => new Date(c.start_date))
+        .sort((a, b) => a - b) // oldest → newest
+        .map((date, i, arr) => {
+            if (i === 0) return null;
+            const prev = arr[i - 1];
+            const diff = (date - prev) / (1000 * 60 * 60 * 24);
+            return Math.round(diff);
+        })
+        .filter(Boolean);
+}
+// Forms
 function setupForms() {
     function onEnter(elementId, callback) {
         document.getElementById(elementId).addEventListener('keydown', e => {
@@ -660,7 +644,7 @@ function buildMoodRow() {
     });
 }
 
-// ── Service Worker & PWA ───────────────────────────────────────────────────
+// Service Worker & PWA
 function setupServiceWorker() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js')
@@ -756,7 +740,7 @@ function monitorOffline() {
     if (!navigator.onLine) bar.classList.add('show');
 }
 
-// ── Settings ───────────────────────────────────────────────────────────────
+// Settings
 function applyFormVisibility() {
     const showFlow = localStorage.getItem('setting-flow') !== 'false';
     const showLogToday = localStorage.getItem('setting-logtoday') !== 'false';
@@ -807,36 +791,35 @@ function setupSettings() {
 
     // Save button
     document.getElementById('settings-save').addEventListener('click', () => {
-    const wantsNotif = document.getElementById('setting-notif').checked;
+        const wantsNotif = document.getElementById('setting-notif').checked;
 
-    // Fire and forget — don't await push operations
-    if (wantsNotif) {
-        if ('Notification' in window && Notification.permission !== 'granted') {
-            Notification.requestPermission().then(perm => {
-                if (perm === 'granted') subscribePush();
-                else document.getElementById('setting-notif').checked = false;
-            });
-        } else if (Notification.permission === 'granted') {
-            subscribePush();
+        if (wantsNotif) {
+            if ('Notification' in window && Notification.permission !== 'granted') {
+                Notification.requestPermission().then(perm => {
+                    if (perm === 'granted') subscribePush();
+                    else document.getElementById('setting-notif').checked = false;
+                });
+            } else if (Notification.permission === 'granted') {
+                subscribePush();
+            }
+        } else {
+            unsubscribePush(); // no await
         }
-    } else {
-        unsubscribePush(); // no await
-    }
 
-    localStorage.setItem('setting-notif', wantsNotif);
-    localStorage.setItem('setting-flow', document.getElementById('setting-flow').checked);
-    localStorage.setItem('setting-logtoday', document.getElementById('setting-logtoday').checked);
-    applyFormVisibility();
-    overlay.classList.remove('open');
-    toast(t('settings_saved'));
-});
+        localStorage.setItem('setting-notif', wantsNotif);
+        localStorage.setItem('setting-flow', document.getElementById('setting-flow').checked);
+        localStorage.setItem('setting-logtoday', document.getElementById('setting-logtoday').checked);
+        applyFormVisibility();
+        overlay.classList.remove('open');
+        toast(t('settings_saved'));
+    });
 
     // Apply on load
     applyFormVisibility();
 }
 
 
-// ── Toast ──────────────────────────────────────────────────────────────────
+// Toast
 function toast(msg) {
     const el = document.getElementById('toast');
     el.textContent = msg;
