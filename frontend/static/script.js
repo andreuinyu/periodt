@@ -6,7 +6,7 @@ const localeMap = { en: 'en-US', es: 'es-ES', cat: 'ca-ES' };
 
 async function loadTranslations(lang) {
     try {
-        const res = await fetch(`/static/translations/${lang}.json`);
+        const res = await fetchWithRetry(`/static/translations/${lang}.json`);
         translations = await res.json();
     } catch (e) {
         console.warn('Translation load failed, fallback to EN. Error:', e);
@@ -67,7 +67,7 @@ let calYear, calMonth;
 let selectedFlow = 0;
 let selectedSymptoms = new Set();
 let selectedMood = null;
-
+let selectedLang = localStorage.getItem('lang') || 'en';
 let SYMPTOMS = [], MOODS = [];
 
 
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const langSelect = document.getElementById('lang-select');
 
     // Set saved language or default
-    langSelect.value = localStorage.getItem('lang') || 'en';
+    langSelect.value = selectedLang;
 
     // Load translations on page load
     await loadTranslations(langSelect.value);
@@ -230,7 +230,7 @@ function renderHome() {
 
 function fmtShort(iso) {
     const d = new Date(iso  /*+ 'T00:00:00' */);
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return d.toLocaleDateString(localeMap[selectedLang], { month: 'short', day: 'numeric' });
 }
 
 // ── Calendar ───────────────────────────────────────────────────────────────
@@ -317,8 +317,7 @@ function showDayMenu(e, iso) {
     menu.id = 'day-menu';
     menu.className = 'day-menu';
 
-    const lang = localStorage.getItem('lang') || 'en';
-    const fmtLabel = new Date(iso + 'T00:00:00').toLocaleDateString(localeMap[lang], { month: 'short', day: 'numeric' });
+    const fmtLabel = new Date(iso + 'T00:00:00').toLocaleDateString(localeMap[selectedLang], { month: 'short', day: 'numeric' });
 
     const showLogToday = localStorage.getItem('setting-logtoday') !== 'false';
     const options = [
@@ -472,14 +471,14 @@ function renderHistory() {
 
 // eslint-disable-next-line no-unused-vars
 async function deleteCycle(id) {
-    await fetch(`${API}/api/cycles/${id}`, { method: 'DELETE' });
+    await fetchWithRetry(`${API}/api/cycles/${id}`, { method: 'DELETE' });
     await loadAll();
     toast(t('cycle_removed'));
 }
 
 // eslint-disable-next-line no-unused-vars
 async function deleteSymptom(id) {
-    await fetch(`${API}/api/symptoms/${id}`, { method: 'DELETE' });
+    await fetchWithRetry(`${API}/api/symptoms/${id}`, { method: 'DELETE' });
     await loadAll();
     toast(t('log_removed'));
 }
@@ -572,7 +571,7 @@ function setupForms() {
     quickLogBtn.addEventListener('click', async () => {
         const date = document.getElementById('quick-start-date').value;
         if (!date) return toast(t('invalid_date'));
-        const res = await fetch(`${API}/api/cycles`, {
+        const res = await fetchWithRetry(`${API}/api/cycles`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -590,7 +589,7 @@ function setupForms() {
         const endDate = document.getElementById('end-date').value;
         const active = cycles.find(c => !c.end_date);
         if (!active) return toast(t('no_active_period'));
-        const res = await fetch(`${API}/api/cycles/${active.id}`, {
+        const res = await fetchWithRetry(`${API}/api/cycles/${active.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ end_date: endDate })
@@ -604,7 +603,7 @@ function setupForms() {
     saveLogBtn.addEventListener('click', async () => {
         const date = document.getElementById('log-date').value;
         if (!date) return toast(t('invalid_date'));
-        const res = await fetch(`${API}/api/symptoms`, {
+        const res = await fetchWithRetry(`${API}/api/symptoms`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -707,13 +706,13 @@ function urlBase64ToUint8Array(base64String) {
 async function subscribePush() {
     if (!('PushManager' in window)) return console.warn('PushManager not available');
     try {
-        const { public_key } = await fetch(`${API}/api/push/vapid-public-key`).then(r => r.json());
+        const { public_key } = await fetchWithRetry(`${API}/api/push/vapid-public-key`).then(r => r.json());
         const reg = await navigator.serviceWorker.ready;
         const sub = await reg.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array(public_key)
         });
-        await fetch(`${API}/api/push/subscribe`, {
+        await fetchWithRetry(`${API}/api/push/subscribe`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -740,7 +739,7 @@ async function unsubscribePush() {
         if (!sub) return;
 
         // Tell the server first, then unsubscribe locally
-        await fetch(`${API}/api/push/unsubscribe`, {
+        await fetchWithRetry(`${API}/api/push/unsubscribe`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ subscription: sub.toJSON() })
@@ -775,7 +774,7 @@ function setupSettings() {
 
     // Load saved values into controls
     const loadSettingsUI = () => {
-        langSelect.value = localStorage.getItem('lang') || 'en';
+        langSelect.value = selectedLang;
         document.getElementById('setting-flow').checked = localStorage.getItem('setting-flow') !== 'false';
         document.getElementById('setting-logtoday').checked = localStorage.getItem('setting-logtoday') !== 'false';
         // Use saved pref, but cap it at actual browser permission
@@ -801,6 +800,7 @@ function setupSettings() {
     // Language change live-previews the UI
     langSelect.addEventListener('change', async () => {
         localStorage.setItem('lang', langSelect.value);
+        selectedLang = langSelect.value;
         await loadTranslations(langSelect.value);
         applyTranslations();
     });
