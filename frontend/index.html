@@ -13,13 +13,9 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="/static/icons/icon-512.png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap"
-    as="style">
-  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="">
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap"
-    rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap">
   <link rel="stylesheet" href="static/styles.css">
   <script src="static/script.js" defer></script>
 </head>
@@ -52,7 +48,11 @@
       </button>
     </nav>
 
-    <main>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+      </div>
+
+    <main class="hidden">
 
       <!-- ── HOME ──────────────────────────────────────────────── -->
       <div class="view active" id="view-home">

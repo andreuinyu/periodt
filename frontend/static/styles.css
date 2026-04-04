@@ -110,7 +110,33 @@ header {
     color: var(--rose-soft);
     background: rgba(201, 111, 168, 0.1);
 }
+/* Spinner */
+#loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
 
+#loading-overlay.hidden {
+  display: none;
+}
+
+.spinner {
+  width: 80px;
+  height: 80px;
+  border: 8px solid var(--gold);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 /* ── Nav ─────────────────────────────────────────────────────── */
 nav {
     display: flex;
@@ -161,6 +187,10 @@ main {
 }
 
 main::-webkit-scrollbar {
+    display: none;
+}
+
+main.hidden {
     display: none;
 }
 
@@ -582,7 +612,10 @@ main::-webkit-scrollbar {
 
 input[type=date] {
     box-sizing: border-box;
-    width: calc(100% - 2 * var(--card-padding));
+    display:flex;
+    appearance: initial;
+    -webkit-appearance: none;
+    width: 100%;
     max-width: 100%;
     min-width: 0;
     background: var(--surface2);

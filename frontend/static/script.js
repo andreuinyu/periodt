@@ -61,6 +61,7 @@ function reRenderDataDependent() {
     if (typeof buildMoodRow === 'function') {
         buildMoodRow();
     }
+    showLoadingIndicator(false);
 }
 
 // State
@@ -74,6 +75,7 @@ let SYMPTOMS = [], MOODS = [];
 
 // Init 
 document.addEventListener('DOMContentLoaded', async () => {
+    //showLoadingIndicator(true); // start your spinner or "loading..." message
     const langSelect = document.getElementById('lang-select');
     // Set saved language or default
     langSelect.value = selectedLang;
@@ -97,13 +99,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupServiceWorker();
     setupPWA();
     setupSettings();
+     //  hide spinner
     monitorOffline();
 });
 
 
 async function fetchApiData() {
-    //showLoadingIndicator(true); // TODO: start your spinner or "loading..." message
-
+    showLoadingIndicator(true);
     try {
         const results = await Promise.allSettled([
             fetchWithRetry(`${API}/api/cycles`).then(r => r.json()),
@@ -120,8 +122,6 @@ async function fetchApiData() {
     } catch (e) {
         console.warn('Unexpected error', e);
     }
-
-    //showLoadingIndicator(false); // TODO: hide spinner
 }
 
 // Fetch helpers
@@ -141,6 +141,11 @@ async function fetchWithRetry(url, options, timeout, retries = 5) {
             await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));
         }
     }
+}
+
+function showLoadingIndicator(visible) {
+  document.getElementById('loading-overlay').classList.toggle('hidden', !visible);
+  document.querySelector('main').classList.toggle('hidden', visible);
 }
 
 // Nav 
