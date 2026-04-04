@@ -39,6 +39,10 @@ function applyTranslations() {
     document.querySelectorAll('[data-i18n-title]').forEach(el => {
         el.title = t(el.dataset.i18nTitle);
     });
+    reRenderDataDependent();
+}
+
+function reRenderDataDependent() {
     if (typeof renderHome === 'function') {
         renderHome();
     }
@@ -57,7 +61,6 @@ function applyTranslations() {
     if (typeof buildMoodRow === 'function') {
         buildMoodRow();
     }
-
 }
 
 // State
@@ -74,13 +77,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     const langSelect = document.getElementById('lang-select');
     // Set saved language or default
     langSelect.value = selectedLang;
-    // Load translations on page load
-    await loadTranslations(langSelect.value);
+    
+    calYear = new Date().getFullYear();
+    calMonth = new Date().getMonth();
 
     const today = new Date().toISOString().slice(0, 10);
     document.getElementById('quick-start-date').value = today;
     document.getElementById('log-date').value = today;
     document.getElementById('end-date').value = today;
+
+    Promise.all([
+        fetchApiData(),
+        loadTranslations(langSelect.value)
+      ]).then(() => applyTranslations())
+        .catch(e => console.warn('Unexpected error fetching data', e));
     
     setupNav();
     setupForms();
@@ -88,12 +98,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupPWA();
     setupSettings();
     monitorOffline();
-
-    loadAll();
 });
 
 
-async function loadAll() {
+async function fetchApiData() {
     //showLoadingIndicator(true); // TODO: start your spinner or "loading..." message
 
     try {
@@ -112,9 +120,6 @@ async function loadAll() {
     } catch (e) {
         console.warn('Unexpected error', e);
     }
-    calYear = new Date().getFullYear();
-    calMonth = new Date().getMonth();
-    applyTranslations();
 
     //showLoadingIndicator(false); // TODO: hide spinner
 }
@@ -456,14 +461,16 @@ function renderHistory() {
 // eslint-disable-next-line no-unused-vars
 async function deleteCycle(id) {
     await fetchWithRetry(`${API}/api/cycles/${id}`, { method: 'DELETE' });
-    await loadAll();
+    await fetchApiData();
+    reRenderDataDependent();
     toast(t('cycle_removed'));
 }
 
 // eslint-disable-next-line no-unused-vars
 async function deleteSymptom(id) {
     await fetchWithRetry(`${API}/api/symptoms/${id}`, { method: 'DELETE' });
-    await loadAll();
+    await fetchApiData();
+    reRenderDataDependent();
     toast(t('log_removed'));
 }
 
@@ -563,7 +570,10 @@ function setupForms() {
                 flow_intensity: selectedFlow ?? 0  // always send, default 0
             })
         });
-        if (res.ok) { await loadAll(); toast(t('period_logged')); }
+        if (res.ok) { 
+            await fetchApiData();
+            reRenderDataDependent(); 
+            toast(t('period_logged')); }
     });
     onEnter('quick-start-date', () => quickLogBtn.click());
 
@@ -578,7 +588,11 @@ function setupForms() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ end_date: endDate })
         });
-        if (res.ok) { await loadAll(); toast(t('period_ended')); }
+        if (res.ok) { 
+            await fetchApiData();
+            reRenderDataDependent();
+            toast(t('period_ended'));
+        }
     });
     onEnter('end-date', () => endPeriodBtn.click());
 
@@ -592,14 +606,15 @@ function setupForms() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 log_date: date,
-                symptoms: [...selectedSymptoms],   // now a Set of ints
-                mood: selectedMood,                // make sure this is also an int now
+                symptoms: [...selectedSymptoms],   // set of ints
+                mood: selectedMood,                // int
                 pain_level: parseInt(document.getElementById('pain-level').value),
                 notes: document.getElementById('log-notes').value
             })
         });
         if (res.ok) {
-            await loadAll();
+            await fetchApiData();
+            reRenderDataDependent();
             toast(t('symptoms_logged'));
             selectedSymptoms.clear();
             selectedMood = null;
