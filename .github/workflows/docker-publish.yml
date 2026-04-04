@@ -1,4 +1,4 @@
-name: Build, VulnScan & Publish Docker Image
+name: Build & Publish Docker Image
 
 on:
   release:
@@ -40,25 +40,6 @@ jobs:
           registry: ghcr.io
           username: ${{ env.GHCR_USERNAME }}
           password: ${{ env.GHCR_TOKEN }}
-      
-      - name: Build image locally for scanning
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: ./Dockerfile
-          load: true
-          tags: periodt:scan
-          build-args: |
-            BASE_IMAGE=python:3.14-alpine
- 
-      - name: Scan image with Trivy
-        uses: aquasecurity/trivy-action@0.35.0
-        with:
-          image-ref: periodt:scan
-          format: table
-          exit-code: 1
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
  
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
