@@ -146,6 +146,7 @@ open http://localhost:3111
 | GET | `/api/push/vapid-public-key` | Get key for push notifications |
 | POST | `/api/push/subscribe` | Register push subscription |
 | POST | `/api/push/unsubscribe` | Delete push subscription |
+| GET | `/api/version` | dev for local or vX.Y.Z for release |
 
 Interactive API docs: http://localhost:3111/docs
 

@@ -10,6 +10,7 @@ from typing import Optional, List
 import logging
 import sqlite3
 import json
+import os
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -38,6 +39,7 @@ app.add_middleware(
 )
 
 DB_PATH = "/data/tracker.db"
+APP_VERSION = os.getenv("APP_VERSION", "dev")
 
 def get_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
@@ -230,6 +232,10 @@ def get_predictions(db: sqlite3.Connection = Depends(get_db)):
         "last_period": starts[0].isoformat()
     }
 
+@app.get("/api/version")
+@cache(expire=60)
+def get_version():
+    return {"version": APP_VERSION}
 
 # ── Serve frontend ────────────────────────────────────────────────────────────
 

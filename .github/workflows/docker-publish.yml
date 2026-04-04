@@ -55,3 +55,4 @@ jobs:
             ${{ env.DOCKER_HUB_USERNAME }}/periodt:${{ github.event.release.tag_name }}
           build-args: |
             BASE_IMAGE=python:3.14-alpine
+            APP_VERSION=${{ github.event.release.tag_name }}

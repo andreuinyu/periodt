@@ -75,7 +75,6 @@ let SYMPTOMS = [], MOODS = [];
 
 // Init 
 document.addEventListener('DOMContentLoaded', async () => {
-    //showLoadingIndicator(true); // start your spinner or "loading..." message
     const langSelect = document.getElementById('lang-select');
     // Set saved language or default
     langSelect.value = selectedLang;
@@ -90,7 +89,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     Promise.all([
         fetchApiData(),
-        loadTranslations(langSelect.value)
+        loadTranslations(langSelect.value),
+        fetchVersion()
       ]).then(() => applyTranslations())
         .catch(e => console.warn('Unexpected error fetching data', e));
     
@@ -99,7 +99,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupServiceWorker();
     setupPWA();
     setupSettings();
-     //  hide spinner
     monitorOffline();
 });
 
@@ -122,6 +121,12 @@ async function fetchApiData() {
     } catch (e) {
         console.warn('Unexpected error', e);
     }
+}
+
+async function fetchVersion() {
+    const res = await fetchWithTimeout('/api/version');
+    const { version } = await res.json();
+    document.getElementById('app-version').textContent = version;
 }
 
 // Fetch helpers

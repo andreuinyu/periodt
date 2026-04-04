@@ -22,6 +22,10 @@ COPY backend/notifications.py .
 # Copy frontend
 COPY frontend /app/frontend
 
+## Inject version from build args
+ARG APP_VERSION=dev
+ENV APP_VERSION=${APP_VERSION}
+
 # Data directory
 RUN mkdir -p /data
 ENV PYTHONUNBUFFERED=1
