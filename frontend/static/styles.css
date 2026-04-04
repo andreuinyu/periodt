@@ -191,8 +191,10 @@ main::-webkit-scrollbar {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 20px;
+    --card-padding: 20px;
+    padding: var(--card-padding);
     margin-bottom: 14px;
+    overflow: hidden;
 }
 
 .card-title {
@@ -499,6 +501,8 @@ main::-webkit-scrollbar {
 /* ── Log form ────────────────────────────────────────────────── */
 .form-section {
     margin-bottom: 18px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .form-label {
@@ -576,9 +580,11 @@ main::-webkit-scrollbar {
     border-radius: 2px;
 }
 
-input[type=date],
-textarea {
-    width: 100%;
+input[type=date] {
+    box-sizing: border-box;
+    width: calc(100% - 2 * var(--card-padding));
+    max-width: 100%;
+    min-width: 0;
     background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -602,6 +608,19 @@ input[type=date]::-webkit-calendar-picker-indicator {
 textarea {
     resize: vertical;
     min-height: 80px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.2s;
 }
 
 .flow-row {
