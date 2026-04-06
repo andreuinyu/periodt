@@ -2,7 +2,7 @@ const API = '';
 
 // Translations
 let translations = {};
-const localeMap = { en: 'en-US', es: 'es-ES', cat: 'ca-ES' };
+const localeMap = { en: 'en-US', cat: 'ca-ES', es: 'es-ES' };
 
 async function loadTranslations(lang) {
     try {

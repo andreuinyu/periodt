@@ -97,7 +97,7 @@ There are many ways to route your self-hosted services through HTTPS. Amongst th
 
 # Development
 Any help is welcome, but especially:
-* Translations: please, copy one of the existing .json in [frontend/static/translations](frontend/static/translations) and translate all its entries to a missing language. Then, also add the necessary option in [index.html](frontend/index.html) (where `value` is the name of each .json).
+* Translations: please, copy one of the existing .json in [frontend/static/translations](frontend/static/translations) and translate all its entries to a missing language. Then, also add the necessary option in [index.html](frontend/index.html) (where `value` is the name of each .json):
     ```html
     <select id="lang-select" class="settings-select">
       <option value="en">English</option>
@@ -106,6 +106,10 @@ Any help is welcome, but especially:
       ...
     </select>
     ``` 
+  as well as in [script.js](frontend/frontend/script.js), add an entry to the locale map for that language, so that dates get translated right:
+    ```js
+    const localeMap = { en: 'en-US', cat: 'ca-ES', es: 'es-ES', ... };
+    ```
 * Design: Icons, styles, hell, even the name of this thing. 
 * Annoyingly obvious features a simple period tracker should have that this one doesn't.
 
