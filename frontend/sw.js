@@ -1,4 +1,4 @@
-const CACHE_NAME = 'periodt-v1';
+const CACHE_NAME = 'periodt-__APP_VERSION__';
 const STATIC_ASSETS = [
   '/',
   '/static/manifest.json',

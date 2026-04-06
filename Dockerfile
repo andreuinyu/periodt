@@ -25,6 +25,8 @@ COPY frontend /app/frontend
 ## Inject version from build args
 ARG APP_VERSION=dev
 ENV APP_VERSION=${APP_VERSION}
+# Into service worker for cache busting
+RUN sed -i "s/__APP_VERSION__/${APP_VERSION}/g" /app/frontend/sw.js
 
 # Data directory
 RUN mkdir -p /data
