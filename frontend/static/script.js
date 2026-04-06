@@ -225,7 +225,6 @@ function renderHome() {
             predictions.cycle_length
                 ? `${predictions.cycle_length} ${t('days_label')}`
                 : '—';
-
     }
 }
 
