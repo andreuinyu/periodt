@@ -1,0 +1,14 @@
+name-template: '$TAG_NAME'
+tag-template: '$TAG_NAME'
+
+template: |
+  <!-- Write your release notes here -->
+
+
+  ## Merged PRs
+  $CHANGES
+
+  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...$TAG_NAME
+
+change-template: '- $TITLE by @$AUTHOR in #$NUMBER'
+change-title-escapes: '\<*_&'
