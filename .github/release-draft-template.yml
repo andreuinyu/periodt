@@ -1,6 +1,7 @@
-name-template: '$TAG_NAME'
-tag-template: '$TAG_NAME'
-
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+change-template: '- $TITLE by @$AUTHOR in #$NUMBER'
+change-title-escapes: '\<*_&'
 template: |
   <!-- Write your release notes here -->
 
@@ -9,6 +10,3 @@ template: |
   $CHANGES
 
   **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...$TAG_NAME
-
-change-template: '- $TITLE by @$AUTHOR in #$NUMBER'
-change-title-escapes: '\<*_&'
