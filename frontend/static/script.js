@@ -94,6 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       ]).then(() => applyTranslations())
         .catch(e => console.warn('Unexpected error fetching data', e));
     
+    setupCalendar();
     setupNav();
     setupForms();
     setupServiceWorker();
@@ -234,6 +235,25 @@ function fmtShort(iso) {
 }
 
 // Calendar
+function setupCalendar() {
+    document.getElementById('cal-prev').addEventListener('click', () => {
+        calMonth--; 
+        if (calMonth < 0) { 
+            calMonth = 11;
+            calYear--;
+        }
+        renderCalendar();
+    });
+    document.getElementById('cal-next').addEventListener('click', () => {
+        calMonth++; 
+        if (calMonth > 11) { 
+            calMonth = 0;
+            calYear++;
+        }
+        renderCalendar();
+    });
+}
+
 function renderCalendar() {
     const MONTHS = t('months');
     const DOWS = t('dows');
@@ -297,12 +317,6 @@ function renderCalendar() {
         el.addEventListener('click', (e) => showDayMenu(e, iso));
         grid.appendChild(el);
     }
-    document.getElementById('cal-prev').addEventListener('click', () => {
-        calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCalendar();
-    });
-    document.getElementById('cal-next').addEventListener('click', () => {
-        calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCalendar();
-    });
 }
 
 // Day-tap popup menu
