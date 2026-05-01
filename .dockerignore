@@ -14,3 +14,4 @@ README.md
 LICENSE
 renovate.json
 eslint.config.js
+.vscode/
