@@ -239,7 +239,7 @@ def get_version():
 
 @app.get("/health")
 def get_health():
-    return {"status": "ok"}, 200
+    return {"status": "ok"}
 
 # ── Serve frontend ────────────────────────────────────────────────────────────
 
