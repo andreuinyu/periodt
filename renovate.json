@@ -12,6 +12,13 @@
   "github-actions": {
     "fileMatch": ["^\\.github/workflows/[^/]+\\.yml$"]
   },
+  "packageRules": [
+    {
+      "matchManagers": ["github-actions"],
+      "matchDepNames": ["node"],
+      "enabled": false
+    }
+  ],
   "rangeStrategy": "bump",
   "semanticCommits": "enabled",
   "labels": ["renovate"]
