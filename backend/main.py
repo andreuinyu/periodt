@@ -11,7 +11,8 @@ import logging
 import sqlite3
 import json
 import os
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
+import zoneinfo
 from pathlib import Path
 
 from notifications import lifespan, router as push_router
@@ -79,6 +80,19 @@ def init_db():
     conn.close()
 
 init_db()
+
+# ── Filters for uvicorn logs ────────────────────────────────────────────────────────────────
+class EndpointFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return '/health' not in record.getMessage()
+
+class TZFormatter(logging.Formatter):
+    def formatTime(self, record, datefmt=None):
+        tz = zoneinfo.ZoneInfo(os.environ.get("TZ", "UTC"))
+        ct = datetime.fromtimestamp(record.created, tz=tz)
+        if datefmt:
+            return ct.strftime(datefmt)
+        return ct.isoformat()
 
 # ── Models ──────────────────────────────────────────────────────────────────
 

@@ -1,0 +1,52 @@
+{
+    "version": 1,
+    "disable_existing_loggers": false,
+    "formatters": {
+        "default": {
+            "()": "main.TZFormatter",
+            "format": "%(asctime)s %(levelname)-8s %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S"
+        }
+    },
+    "filters": {
+        "health_filter": {
+            "()": "main.EndpointFilter"
+        }
+    },
+    "handlers": {
+        "default": {
+            "class": "logging.StreamHandler",
+            "formatter": "default"
+        },
+        "access": {
+            "class": "logging.StreamHandler",
+            "formatter": "default",
+            "filters": [
+                "health_filter"
+            ]
+        }
+    },
+    "loggers": {
+        "uvicorn": {
+            "handlers": [
+                "default"
+            ],
+            "level": "INFO",
+            "propagate": false
+        },
+        "uvicorn.error": {
+            "handlers": [
+                "default"
+            ],
+            "level": "INFO",
+            "propagate": false
+        },
+        "uvicorn.access": {
+            "handlers": [
+                "access"
+            ],
+            "level": "INFO",
+            "propagate": false
+        }
+    }
+}
