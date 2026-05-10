@@ -237,6 +237,10 @@ def get_predictions(db: sqlite3.Connection = Depends(get_db)):
 def get_version():
     return {"version": APP_VERSION}
 
+@app.get("/health")
+def get_health():
+    return {"status": "ok"}
+
 # ── Serve frontend ────────────────────────────────────────────────────────────
 
 frontend_path = Path("/app/frontend")
