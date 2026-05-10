@@ -123,11 +123,12 @@ def check_and_notify():
             return
 
         days_away = (next_period - date.today()).days
-        logger.info(f"Next period predicted for {next_period} (in {days_away} days), sending notifications to subscribers")
         if days_away not in range(1, NOTIFY_DAYS_BEFORE):
             logger.info(f"Next period is not within 1-{NOTIFY_DAYS_BEFORE-1} days, skipping notifications")
             return
 
+        logger.info(f"Next period predicted for {next_period} (in {days_away} days), sending notifications to subscribers")
+        
         keys_row = db.execute("SELECT value FROM config WHERE key='vapid_keys'").fetchone()
         if not keys_row:
             logger.error("VAPID keys not found in config, cannot send push notifications")
