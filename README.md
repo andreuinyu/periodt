@@ -151,6 +151,7 @@ open http://localhost:3111
 | POST | `/api/push/subscribe` | Register push subscription |
 | POST | `/api/push/unsubscribe` | Delete push subscription |
 | GET | `/api/version` | dev for local or vX.Y.Z for release |
+| GET | `/health` | for Docker integration |
 
 Interactive API docs: http://localhost:3111/docs
 
@@ -166,6 +167,7 @@ period-tracker/
 ├── backend/
 │   ├── main.py          # FastAPI app
 │   ├── notifications.py # Notification handling
+│   ├── log_config.json
 │   └── requirements.txt
 └── frontend/
     ├── index.html       # PWA shell
