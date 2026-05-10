@@ -16,14 +16,11 @@ from pathlib import Path
 
 from notifications import lifespan, router as push_router
 
-app = FastAPI(title="Period Tracker API", lifespan=lifespan)
+DB_PATH = "/data/tracker.db"
+APP_VERSION = os.getenv("APP_VERSION", "dev")
+
+app = FastAPI(title="Periodt", lifespan=lifespan)
 app.include_router(push_router)
-
-@app.on_event("startup")
-async def startup():
-    FastAPICache.init(InMemoryBackend())
-
-
 logger = logging.getLogger("uvicorn.error")
 
 @app.exception_handler(Exception)
@@ -37,9 +34,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-DB_PATH = "/data/tracker.db"
-APP_VERSION = os.getenv("APP_VERSION", "dev")
 
 def get_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
