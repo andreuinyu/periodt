@@ -1,7 +1,7 @@
 fastapi==0.141.1
 fastapi-cache2==0.2.2
 jinja2==3.1.6
-uvicorn==0.52.4
+uvicorn==0.53.0
 pydantic==2.13.5
 pywebpush==2.5.0
 py-vapid==1.9.4
