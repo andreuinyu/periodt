@@ -1,5 +1,5 @@
 # ---------- builder ----------
-FROM python:3.14-alpine AS builder
+FROM python:3.15-alpine AS builder
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ RUN apk add --no-cache tzdata && uv pip install --system --no-cache -r requireme
 
 
 # ---------- final ----------
-FROM python:3.14-alpine
+FROM python:3.15-alpine
 
 ## Inject version from build args
 ARG APP_VERSION=dev
