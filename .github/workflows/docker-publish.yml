@@ -54,5 +54,5 @@ jobs:
             ${{ env.DOCKER_HUB_USERNAME }}/periodt:latest
             ${{ env.DOCKER_HUB_USERNAME }}/periodt:${{ github.event.release.tag_name }}
           build-args: |
-            BASE_IMAGE=python:3.14-alpine
+            BASE_IMAGE=python:3.15-alpine
             APP_VERSION=${{ github.event.release.tag_name }}

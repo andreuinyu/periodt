@@ -29,7 +29,7 @@ jobs:
           load: true
           tags: periodt:test
           build-args: |
-            BASE_IMAGE=python:3.14-alpine
+            BASE_IMAGE=python:3.15-alpine
  
       - name: Start container
         run: docker run -d --name periodt-test -p 8000:8000 periodt:test
