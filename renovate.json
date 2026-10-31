@@ -5,8 +5,7 @@
   },
   "dockerfile": {
     "fileMatch": [
-      "^Dockerfile$",
-      "^backend/Dockerfile$"
+      "^Dockerfile$"
     ]
   },
   "github-actions": {

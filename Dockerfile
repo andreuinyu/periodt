@@ -5,8 +5,11 @@ WORKDIR /app
 
 # Install deps with uv (fast pip)
 COPY backend/requirements.txt .
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-RUN apk add --no-cache tzdata && uv pip install --system --no-cache -r requirements.txt
+# COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uv
+# RUN apk add --no-cache tzdata && uv pip install --system --no-cache -r requirements.txt
+RUN /uv venv /opt/venv \
+ && /uv pip install --python /opt/venv/bin/python --no-cache -r requirements.txt
 
 
 # ---------- final ----------
@@ -27,8 +30,12 @@ RUN apk add --no-cache tzdata
 WORKDIR /app
 
 # Copy installed packages from builder
-COPY --from=builder /usr/local/lib/python3.15/site-packages /usr/local/lib/python3.15/site-packages
-COPY --from=builder /usr/local/bin /usr/local/bin
+# COPY --from=builder /usr/local/lib/python3.15/site-packages /usr/local/lib/python3.15/site-packages
+# COPY --from=builder /usr/local/bin /usr/local/bin
+# # And prune 
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+RUN pip uninstall -y pip
 
 # Copy backend
 COPY backend/main.py .
