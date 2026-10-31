@@ -117,7 +117,7 @@ Any help is welcome, but especially:
 
 | Layer | Tech |
 |-------|------|
-| Backend | Python 3.14 + FastAPI |
+| Backend | Python 3.15 + FastAPI |
 | Database | SQLite |
 | Frontend | Vanilla JS PWA |
 | Container | Docker + Docker Compose |
